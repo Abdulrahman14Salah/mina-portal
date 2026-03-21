@@ -10,4 +10,7 @@ return [
     'completed_on' => 'اكتمل في :date',
     'step_number' => 'الخطوة :number',
     'progress_summary' => 'تقدم سير العمل',
+    'reopen' => 'إعادة فتح',
+    'task_summary' => ':completed / :total مهام مكتملة',
+    'reopen_success' => 'تمت إعادة فتح المهمة.',
 ];

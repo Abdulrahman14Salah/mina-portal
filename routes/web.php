@@ -71,6 +71,7 @@ Route::middleware(['auth', 'verified'])->prefix('reviewer')->name('reviewer.')->
     Route::get('/applications/{application}', [ReviewerApplicationController::class, 'show'])->middleware('can:tasks.view')->name('applications.show');
     Route::post('/applications/{application}/tasks/{task}/advance', [ReviewerApplicationController::class, 'advance'])->name('applications.tasks.advance');
     Route::post('/applications/{application}/tasks/{task}/reject', [ReviewerApplicationController::class, 'reject'])->name('applications.tasks.reject');
+    Route::post('/applications/{application}/tasks/{task}/reopen', [ReviewerApplicationController::class, 'reopen'])->middleware('can:tasks.advance')->name('applications.tasks.reopen');
     Route::post('/applications/{application}/documents', [ReviewerDocumentController::class, 'store'])->middleware('can:documents.reviewer-upload')->name('applications.documents.store');
 });
 

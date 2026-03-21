@@ -16,4 +16,9 @@ class ApplicationTaskPolicy
     {
         return $user->can('tasks.reject');
     }
+
+    public function reopen(User $user, ApplicationTask $task): bool
+    {
+        return $user->can('tasks.advance');
+    }
 }

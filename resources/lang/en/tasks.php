@@ -10,4 +10,7 @@ return [
     'completed_on' => 'Completed on :date',
     'step_number' => 'Step :number',
     'progress_summary' => 'Workflow Progress',
+    'reopen' => 'Re-open',
+    'task_summary' => ':completed / :total tasks complete',
+    'reopen_success' => 'Task has been re-opened.',
 ];

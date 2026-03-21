@@ -13,9 +13,7 @@ use InvalidArgumentException;
 
 class WorkflowService
 {
-    public function __construct(private AuditLogService $auditLog)
-    {
-    }
+    public function __construct(private AuditLogService $auditLog) {}
 
     public function seedTasksForApplication(VisaApplication $application): void
     {
@@ -52,11 +50,13 @@ class WorkflowService
 
     public function advanceTask(ApplicationTask $task, ?string $note): void
     {
-        if ($task->status !== 'in_progress') {
-            throw new InvalidArgumentException('Only an in_progress task can be advanced.');
-        }
-
         DB::transaction(function () use ($task, $note): void {
+            $task = ApplicationTask::lockForUpdate()->findOrFail($task->id);
+
+            if ($task->status !== 'in_progress') {
+                throw new InvalidArgumentException('Only an in_progress task can be advanced.');
+            }
+
             $task->update([
                 'status' => 'completed',
                 'completed_at' => now(),
@@ -69,9 +69,6 @@ class WorkflowService
 
             if ($nextTask) {
                 $nextTask->update(['status' => 'in_progress']);
-            } else {
-                $task->application->update(['status' => 'approved']);
-                $this->auditLog->log('application_approved', $this->actor(), ['reference' => $task->application->reference_number]);
             }
         });
 
@@ -80,22 +77,44 @@ class WorkflowService
 
     public function rejectTask(ApplicationTask $task, ?string $note): void
     {
-        if ($task->status !== 'in_progress') {
-            throw new InvalidArgumentException('Only an in_progress task can be rejected.');
-        }
-
         DB::transaction(function () use ($task, $note): void {
+            $task = ApplicationTask::lockForUpdate()->findOrFail($task->id);
+
+            if ($task->status !== 'in_progress') {
+                throw new InvalidArgumentException('Only an in_progress task can be rejected.');
+            }
+
             $task->update([
                 'status' => 'rejected',
                 'completed_at' => now(),
                 'reviewer_note' => $note,
             ]);
-
-            $task->application->update(['status' => 'rejected']);
         });
 
         $this->auditLog->log('task_rejected', $this->actor(), ['task' => $task->name, 'reference' => $task->application->reference_number]);
-        $this->auditLog->log('application_rejected', $this->actor(), ['reference' => $task->application->reference_number]);
+    }
+
+    public function reopenTask(ApplicationTask $task): void
+    {
+        DB::transaction(function () use ($task): void {
+            $task = ApplicationTask::lockForUpdate()->findOrFail($task->id);
+
+            if ($task->status !== 'rejected') {
+                throw new InvalidArgumentException('Only a rejected task can be re-opened.');
+            }
+
+            $task->update([
+                'status' => 'in_progress',
+                'reviewer_note' => null,
+                'completed_at' => null,
+            ]);
+        });
+
+        $this->auditLog->log('task_reopened', $this->actor(), [
+            'task_id' => $task->id,
+            'application_id' => $task->application_id,
+            'task_name' => $task->name,
+        ]);
     }
 
     private function actor(): ?User

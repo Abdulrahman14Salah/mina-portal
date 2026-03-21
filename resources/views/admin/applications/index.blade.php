@@ -11,6 +11,7 @@
                         'reference_number' => __('admin.col_reference'),
                         'created_at'       => __('admin.col_submitted'),
                         'status'           => __('admin.col_status'),
+                        'tasks'            => __('tasks.progress_summary'),
                     ]"
                     :rows="$applications"
                     :search-query="$search"
@@ -30,6 +31,9 @@
                                    'bg-gray-100 text-gray-600') }}">
                                 {{ $app->status }}
                             </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            {{ __('tasks.task_summary', ['completed' => $app->completed_tasks_count ?? 0, 'total' => $app->tasks_count ?? 0]) }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <a href="{{ route('admin.applications.documents.index', $app) }}" class="text-sm text-blue-600 hover:underline">

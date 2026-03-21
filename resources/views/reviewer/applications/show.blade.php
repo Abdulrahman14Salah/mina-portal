@@ -26,6 +26,10 @@
                 <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">{{ session('success') }}</div>
             @endif
 
+            @if (session('error'))
+                <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ session('error') }}</div>
+            @endif
+
             {{-- Workflow Tasks --}}
             <div class="space-y-4">
                 <h3 class="text-lg font-semibold text-gray-900">{{ __('reviewer.workflow_progress') }}</h3>
@@ -61,7 +65,16 @@
                             </span>
                         </div>
 
-                        @if ($activeTask && $task->id === $activeTask->id)
+                        @if ($task->status === 'rejected')
+                            <div class="mt-4">
+                                <form method="POST" action="{{ route('reviewer.applications.tasks.reopen', [$application, $task]) }}">
+                                    @csrf
+                                    <button type="submit" class="rounded-md bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-500">
+                                        {{ __('tasks.reopen') }}
+                                    </button>
+                                </form>
+                            </div>
+                        @elseif ($activeTask && $task->id === $activeTask->id)
                             <div class="mt-4 rounded-lg bg-indigo-50/60 p-4">
                                 <p class="mb-4 text-sm font-medium text-indigo-900">{{ __('tasks.current_step') }}</p>
                                 <div class="grid gap-4 md:grid-cols-2">

@@ -90,7 +90,7 @@ class WorkflowTest extends TestCase
         $this->assertSame('in_progress', ApplicationTask::where('application_id', $application->id)->where('position', 2)->first()->status);
     }
 
-    public function test_all_tasks_completed_sets_application_approved(): void
+    public function test_all_tasks_completed_does_not_auto_approve_application(): void
     {
         $reviewer = $this->makeReviewer();
         $application = $this->makeOnboardedApplication();
@@ -100,7 +100,7 @@ class WorkflowTest extends TestCase
             $this->actingAs($reviewer)->post(route('reviewer.applications.tasks.advance', [$application, $task]), ['note' => 'Done']);
         }
 
-        $this->assertSame('approved', $application->fresh()->status);
+        $this->assertNotEquals('approved', $application->fresh()->status);
     }
 
     public function test_reviewer_can_reject_task(): void
@@ -112,7 +112,7 @@ class WorkflowTest extends TestCase
         $this->actingAs($reviewer)->post(route('reviewer.applications.tasks.reject', [$application, $task]), ['note' => 'Insufficient information'])->assertRedirect();
 
         $this->assertSame('rejected', $task->fresh()->status);
-        $this->assertSame('rejected', $application->fresh()->status);
+        $this->assertNotEquals('rejected', $application->fresh()->status);
     }
 
     public function test_client_cannot_advance_tasks(): void

@@ -22,7 +22,10 @@ class ApplicationController extends Controller
         }
         $sortDir = in_array($sortDir, ['asc', 'desc']) ? $sortDir : 'desc';
 
-        $query = VisaApplication::with(['user', 'visaType']);
+        $query = VisaApplication::with(['user', 'visaType'])->withCount([
+            'tasks',
+            'tasks as completed_tasks_count' => fn ($q) => $q->where('status', 'completed'),
+        ]);
 
         if ($search) {
             $query->where(function ($q) use ($search) {
