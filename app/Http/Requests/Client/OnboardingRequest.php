@@ -32,4 +32,11 @@ class OnboardingRequest extends FormRequest
             'agreed_to_terms' => ['required', 'accepted'],
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'email.unique' => 'An account with this email already exists.',
+        ];
+    }
 }

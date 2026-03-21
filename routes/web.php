@@ -23,15 +23,12 @@ use App\Http\Controllers\Reviewer\DashboardController as ReviewerDashboardContro
 use App\Http\Controllers\Reviewer\DocumentController as ReviewerDocumentController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
-
 Route::post('/language/{locale}', [LanguageController::class, 'switch'])->name('language.switch');
 
 Route::post('/payments/webhook', [PaymentWebhookController::class, 'handle'])->name('payments.webhook');
 
 Route::middleware('guest')->group(function () {
+    Route::get('/', fn () => redirect()->route('onboarding.show'))->name('home');
     Route::get('/apply', [OnboardingController::class, 'show'])->name('onboarding.show');
     Route::post('/apply', [OnboardingController::class, 'store'])->name('onboarding.store');
 });

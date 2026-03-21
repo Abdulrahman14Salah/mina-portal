@@ -38,4 +38,5 @@ return [
     'forced_logout' => 'Your session has ended because your account is deactivated.',
     'failed' => 'These credentials do not match our records.',
     'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
+    'apply_now' => "Don't have an account? Apply now",
 ];

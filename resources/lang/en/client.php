@@ -58,4 +58,6 @@ return [
     'application_submitted_successfully' => 'Your application has been submitted successfully.',
     'no_application_title' => 'No Application Found',
     'no_application_body' => 'Your account is active but no visa application is linked to it yet. Please contact support or an administrator to get started.',
+    'have_account' => 'Already have an account? Login',
+    'email_already_exists' => 'An account with this email already exists.',
 ];

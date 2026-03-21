@@ -58,4 +58,6 @@ return [
     'application_submitted_successfully' => 'تم تقديم طلبك بنجاح.',
     'no_application_title' => 'لم يتم العثور على طلب',
     'no_application_body' => 'حسابك نشط ولكن لم يتم ربط أي طلب تأشيرة به بعد. يرجى التواصل مع الدعم أو المسؤول للبدء.',
+    'have_account' => 'هل لديك حساب؟ تسجيل الدخول',
+    'email_already_exists' => 'يوجد حساب مرتبط بهذا البريد الإلكتروني بالفعل.',
 ];

@@ -121,5 +121,17 @@
                 </div>
             </div>
         </form>
+
+        <p class="mt-6 text-center text-sm">
+            @php
+                $highlightLoginLink = collect($errors->get('email'))
+                    ->contains(fn($m) => str_contains($m, 'already exists'));
+            @endphp
+            <a id="login-toggle-link"
+               href="{{ route('login') }}"
+               class="{{ $highlightLoginLink ? 'font-semibold text-indigo-700 underline' : 'text-gray-600 hover:text-gray-900 underline' }}">
+                {{ __('client.have_account') }}
+            </a>
+        </p>
     </div>
 </x-guest-layout>
