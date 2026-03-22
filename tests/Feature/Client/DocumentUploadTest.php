@@ -217,4 +217,185 @@ class DocumentUploadTest extends TestCase
 
         $this->actingAs($data['user'])->get(route('documents.download', Document::first()))->assertOk();
     }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function client_can_upload_application_level_document_without_task(): void
+    {
+        $data = $this->makeClientWithApplication();
+
+        $this->actingAs($data['user'])
+            ->post(route('client.documents.store'), [
+                'application_id' => $data['application']->id,
+                'file' => UploadedFile::fake()->create('general.pdf', 100, 'application/pdf'),
+            ])
+            ->assertRedirect(route('client.dashboard', ['tab' => 'documents']));
+
+        $this->assertDatabaseCount('documents', 1);
+        $this->assertNull(Document::first()->application_task_id);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function client_upload_to_closed_task_is_rejected(): void
+    {
+        $data = $this->makeClientWithApplication();
+        $task = $data['application']->tasks->firstWhere('position', 1);
+
+        $this->actingAs($data['user'])
+            ->post(route('client.documents.store'), [
+                'application_task_id' => $task->id,
+                'file' => UploadedFile::fake()->create('passport.pdf', 100, 'application/pdf'),
+            ])
+            ->assertStatus(422);
+
+        $this->assertDatabaseCount('documents', 0);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function client_cannot_upload_more_than_10_documents_to_same_task(): void
+    {
+        $data = $this->makeClientWithApplication();
+        $task = $data['application']->tasks->firstWhere('position', 3);
+
+        for ($i = 0; $i < 10; $i++) {
+            Document::create([
+                'application_id' => $data['application']->id,
+                'application_task_id' => $task->id,
+                'uploaded_by' => $data['user']->id,
+                'source_type' => 'client',
+                'original_filename' => "doc{$i}.pdf",
+                'stored_filename' => "doc{$i}.pdf",
+                'disk' => 'local',
+                'path' => "documents/{$data['application']->id}/doc{$i}.pdf",
+                'mime_type' => 'application/pdf',
+                'size' => 100,
+            ]);
+        }
+
+        $this->actingAs($data['user'])
+            ->post(route('client.documents.store'), [
+                'application_task_id' => $task->id,
+                'file' => UploadedFile::fake()->create('11th.pdf', 100, 'application/pdf'),
+            ])
+            ->assertStatus(422);
+
+        $this->assertDatabaseCount('documents', 10);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function client_cannot_upload_more_than_10_application_level_documents(): void
+    {
+        $data = $this->makeClientWithApplication();
+
+        for ($i = 0; $i < 10; $i++) {
+            Document::create([
+                'application_id' => $data['application']->id,
+                'application_task_id' => null,
+                'uploaded_by' => $data['user']->id,
+                'source_type' => 'client',
+                'original_filename' => "doc{$i}.pdf",
+                'stored_filename' => "doc{$i}.pdf",
+                'disk' => 'local',
+                'path' => "documents/{$data['application']->id}/doc{$i}.pdf",
+                'mime_type' => 'application/pdf',
+                'size' => 100,
+            ]);
+        }
+
+        $this->actingAs($data['user'])
+            ->post(route('client.documents.store'), [
+                'application_id' => $data['application']->id,
+                'file' => UploadedFile::fake()->create('11th.pdf', 100, 'application/pdf'),
+            ])
+            ->assertStatus(422);
+
+        $this->assertDatabaseCount('documents', 10);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function client_can_delete_own_document_on_open_task(): void
+    {
+        $data = $this->makeClientWithApplication();
+        $task = $data['application']->tasks->firstWhere('position', 3);
+
+        $this->actingAs($data['user'])->post(route('client.documents.store'), [
+            'application_task_id' => $task->id,
+            'file' => UploadedFile::fake()->create('passport.pdf', 100, 'application/pdf'),
+        ]);
+
+        $document = Document::first();
+
+        $this->actingAs($data['user'])
+            ->delete(route('client.documents.destroy', $document))
+            ->assertRedirect(route('client.dashboard', ['tab' => 'documents']));
+
+        $this->assertDatabaseMissing('documents', ['id' => $document->id]);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function client_cannot_delete_own_document_on_closed_task(): void
+    {
+        $data = $this->makeClientWithApplication();
+        $task = $data['application']->tasks->firstWhere('position', 3);
+
+        $this->actingAs($data['user'])->post(route('client.documents.store'), [
+            'application_task_id' => $task->id,
+            'file' => UploadedFile::fake()->create('passport.pdf', 100, 'application/pdf'),
+        ]);
+
+        $document = Document::first();
+        $task->update(['status' => 'completed']);
+
+        $this->actingAs($data['user'])
+            ->delete(route('client.documents.destroy', $document))
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('documents', ['id' => $document->id]);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function client_cannot_delete_reviewer_uploaded_document(): void
+    {
+        $data = $this->makeClientWithApplication();
+        $task = $data['application']->tasks->firstWhere('position', 3);
+
+        $reviewer = User::factory()->create();
+        $reviewer->assignRole('reviewer');
+
+        Document::create([
+            'application_id' => $data['application']->id,
+            'application_task_id' => $task->id,
+            'uploaded_by' => $reviewer->id,
+            'source_type' => 'reviewer',
+            'original_filename' => 'reviewer_doc.pdf',
+            'stored_filename' => 'reviewer_doc.pdf',
+            'disk' => 'local',
+            'path' => "documents/{$data['application']->id}/reviewer_doc.pdf",
+            'mime_type' => 'application/pdf',
+            'size' => 100,
+        ]);
+
+        $document = Document::first();
+
+        $this->actingAs($data['user'])
+            ->delete(route('client.documents.destroy', $document))
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('documents', ['id' => $document->id]);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function client_can_upload_docx_file(): void
+    {
+        $data = $this->makeClientWithApplication();
+        $task = $data['application']->tasks->firstWhere('position', 3);
+
+        $this->actingAs($data['user'])
+            ->post(route('client.documents.store'), [
+                'application_task_id' => $task->id,
+                'file' => UploadedFile::fake()->create('test.docx', 100, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'),
+            ])
+            ->assertRedirect(route('client.dashboard', ['tab' => 'documents']));
+
+        $this->assertDatabaseCount('documents', 1);
+    }
 }

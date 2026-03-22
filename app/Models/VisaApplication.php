@@ -14,6 +14,7 @@ class VisaApplication extends Model
     protected $fillable = [
         'user_id',
         'visa_type_id',
+        'assigned_reviewer_id',
         'status',
         'full_name',
         'email',

@@ -45,6 +45,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/client/dashboard/{tab?}', [ClientDashboardController::class, 'show'])->middleware('active')->name('client.dashboard');
     Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
     Route::post('/client/documents', [ClientDocumentController::class, 'store'])->middleware('active')->name('client.documents.store');
+    Route::delete('/client/documents/{document}', [ClientDocumentController::class, 'destroy'])->middleware('active')->name('client.documents.destroy');
     Route::get('/payments/success', [PaymentController::class, 'success'])->middleware('active')->name('client.payments.success');
     Route::get('/payments/cancel', [PaymentController::class, 'cancel'])->middleware('active')->name('client.payments.cancel');
     Route::get('/payments/{payment}/checkout', [PaymentController::class, 'checkout'])->middleware('active')->name('client.payments.checkout');
@@ -62,6 +63,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::get('/applications', [AdminApplicationController::class, 'index'])->middleware('can:dashboard.admin')->name('applications.index');
     Route::get('/applications/{application}/documents', [AdminDocumentController::class, 'index'])->middleware('can:dashboard.admin')->name('applications.documents.index');
     Route::post('/applications/{application}/documents', [AdminDocumentController::class, 'store'])->middleware('can:dashboard.admin')->name('applications.documents.store');
+    Route::delete('/applications/{application}/documents/{document}', [AdminDocumentController::class, 'destroy'])->middleware('can:dashboard.admin')->name('applications.documents.destroy');
     Route::get('/applications/{application}/payments', [AdminPaymentController::class, 'index'])->middleware('can:dashboard.admin')->name('applications.payments.index');
     Route::patch('/applications/{application}/payments/{payment}/mark-due', [AdminPaymentController::class, 'markDue'])->middleware('can:dashboard.admin')->name('applications.payments.mark-due');
 });

@@ -15,9 +15,7 @@ use Illuminate\View\View;
 
 class DocumentController extends Controller
 {
-    public function __construct(private DocumentService $documentService)
-    {
-    }
+    public function __construct(private DocumentService $documentService) {}
 
     public function index(VisaApplication $application): View
     {
@@ -32,14 +30,34 @@ class DocumentController extends Controller
     {
         $this->authorize('adminUpload', Document::class);
 
-        $task = ApplicationTask::findOrFail($request->integer('application_task_id'));
-        abort_if($task->application_id !== $application->id, 404);
+        $user = Auth::user();
+        abort_unless($user instanceof User, 403);
+
+        if ($request->filled('application_task_id')) {
+            $task = ApplicationTask::findOrFail($request->integer('application_task_id'));
+            abort_if($task->application_id !== $application->id, 404);
+        } else {
+            $task = null;
+        }
+
+        $this->documentService->upload($application, $task, $request->file('file'), $user, 'admin');
+
+        return redirect()->route('admin.applications.documents.index', $application)
+            ->with('success', __('documents.admin_upload_success'));
+    }
+
+    public function destroy(VisaApplication $application, Document $document): RedirectResponse
+    {
+        $this->authorize('delete', $document);
+
+        abort_if($document->application_id !== $application->id, 404);
 
         $user = Auth::user();
         abort_unless($user instanceof User, 403);
 
-        $this->documentService->upload($application, $task, $request->file('file'), $user);
+        $this->documentService->delete($document, $user);
 
-        return redirect()->route('admin.applications.documents.index', $application)->with('success', __('documents.admin_upload_success'));
+        return redirect()->route('admin.applications.documents.index', $application)
+            ->with('success', __('documents.delete_success'));
     }
 }

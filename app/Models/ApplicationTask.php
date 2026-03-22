@@ -11,7 +11,7 @@ class ApplicationTask extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['application_id', 'position', 'name', 'description', 'status', 'reviewer_note', 'completed_at'];
+    protected $fillable = ['application_id', 'workflow_step_template_id', 'position', 'name', 'description', 'status', 'reviewer_note', 'completed_at'];
 
     protected $casts = [
         'position' => 'integer',

@@ -116,6 +116,7 @@ class DocumentReviewerTest extends TestCase
     {
         $reviewer = $this->makeReviewer();
         $data = $this->makeApplicationWithDocument();
+        $data['application']->update(['assigned_reviewer_id' => $reviewer->id]);
         $task = $data['application']->tasks->first();
 
         $this->actingAs($reviewer)
@@ -135,6 +136,7 @@ class DocumentReviewerTest extends TestCase
     {
         $reviewer = $this->makeReviewer();
         $data = $this->makeApplicationWithDocument();
+        $data['application']->update(['assigned_reviewer_id' => $reviewer->id]);
         $task = $data['application']->tasks->first();
 
         $this->actingAs($reviewer)
@@ -143,7 +145,7 @@ class DocumentReviewerTest extends TestCase
                 'application_task_id' => $task->id,
             ]);
 
-        $doc = \App\Models\Document::where('original_filename', 'letter.pdf')->first();
+        $doc = Document::where('original_filename', 'letter.pdf')->first();
         $this->assertNotNull($doc);
         $this->assertSame('reviewer', $doc->source_type);
         $this->assertSame($reviewer->id, $doc->uploaded_by);
@@ -174,5 +176,64 @@ class DocumentReviewerTest extends TestCase
                 'application_task_id' => $task->id,
             ])
             ->assertForbidden();
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function reviewer_can_upload_to_assigned_application(): void
+    {
+        $reviewer = $this->makeReviewer();
+        $data = $this->makeApplicationWithDocument();
+        $data['application']->update(['assigned_reviewer_id' => $reviewer->id]);
+        $task = $data['application']->tasks->first();
+
+        $this->actingAs($reviewer)
+            ->post(route('reviewer.applications.documents.store', $data['application']), [
+                'file' => UploadedFile::fake()->create('reviewer_doc.pdf', 100, 'application/pdf'),
+                'application_task_id' => $task->id,
+            ])
+            ->assertRedirect(route('reviewer.applications.show', $data['application']));
+
+        $this->assertDatabaseHas('documents', [
+            'source_type' => 'reviewer',
+            'uploaded_by' => $reviewer->id,
+        ]);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function reviewer_cannot_upload_to_unassigned_application(): void
+    {
+        $reviewer = $this->makeReviewer();
+        $otherReviewer = $this->makeReviewer();
+        $data = $this->makeApplicationWithDocument();
+        $data['application']->update(['assigned_reviewer_id' => $otherReviewer->id]);
+        $task = $data['application']->tasks->first();
+
+        $this->actingAs($reviewer)
+            ->post(route('reviewer.applications.documents.store', $data['application']), [
+                'file' => UploadedFile::fake()->create('reviewer_doc.pdf', 100, 'application/pdf'),
+                'application_task_id' => $task->id,
+            ])
+            ->assertForbidden();
+
+        $this->assertDatabaseCount('documents', 1);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function reviewer_can_upload_application_level_document(): void
+    {
+        $reviewer = $this->makeReviewer();
+        $data = $this->makeApplicationWithDocument();
+        $data['application']->update(['assigned_reviewer_id' => $reviewer->id]);
+
+        $this->actingAs($reviewer)
+            ->post(route('reviewer.applications.documents.store', $data['application']), [
+                'file' => UploadedFile::fake()->create('general.pdf', 100, 'application/pdf'),
+            ])
+            ->assertRedirect(route('reviewer.applications.show', $data['application']));
+
+        $this->assertDatabaseHas('documents', [
+            'source_type' => 'reviewer',
+            'application_task_id' => null,
+        ]);
     }
 }

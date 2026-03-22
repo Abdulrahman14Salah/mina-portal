@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Models\ApplicationTask;
 use App\Models\Document;
 use App\Models\User;
 use App\Models\VisaApplication;
@@ -130,5 +129,82 @@ class DocumentAdminTest extends TestCase
         $client->assignRole('client');
 
         $this->actingAs($client)->get('/admin/applications')->assertForbidden();
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function admin_uploaded_documents_have_source_type_admin(): void
+    {
+        $admin = $this->makeAdmin();
+        $data = $this->makeApplication();
+        $task = $data['application']->tasks->firstWhere('position', 3);
+
+        $this->actingAs($admin)->post(route('admin.applications.documents.store', $data['application']), [
+            'application_task_id' => $task->id,
+            'file' => UploadedFile::fake()->create('visa.pdf', 100, 'application/pdf'),
+        ]);
+
+        $this->assertDatabaseHas('documents', [
+            'uploaded_by' => $admin->id,
+            'source_type' => 'admin',
+        ]);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function admin_can_upload_application_level_document_without_task(): void
+    {
+        $admin = $this->makeAdmin();
+        $data = $this->makeApplication();
+
+        $this->actingAs($admin)
+            ->post(route('admin.applications.documents.store', $data['application']), [
+                'file' => UploadedFile::fake()->create('general.pdf', 100, 'application/pdf'),
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseCount('documents', 1);
+        $this->assertNull(Document::first()->application_task_id);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function admin_can_delete_any_document(): void
+    {
+        $admin = $this->makeAdmin();
+        $data = $this->makeApplication();
+        $task = $data['application']->tasks->firstWhere('position', 3);
+
+        $this->actingAs($admin)->post(route('admin.applications.documents.store', $data['application']), [
+            'application_task_id' => $task->id,
+            'file' => UploadedFile::fake()->create('visa.pdf', 100, 'application/pdf'),
+        ]);
+
+        $document = Document::first();
+
+        $this->actingAs($admin)
+            ->delete(route('admin.applications.documents.destroy', [$data['application'], $document]))
+            ->assertRedirect();
+
+        $this->assertDatabaseMissing('documents', ['id' => $document->id]);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function admin_delete_returns_404_if_document_does_not_belong_to_application(): void
+    {
+        $admin = $this->makeAdmin();
+        $data1 = $this->makeApplication();
+        $data2 = $this->makeApplication();
+        $task1 = $data1['application']->tasks->firstWhere('position', 3);
+
+        $this->actingAs($admin)->post(route('admin.applications.documents.store', $data1['application']), [
+            'application_task_id' => $task1->id,
+            'file' => UploadedFile::fake()->create('visa.pdf', 100, 'application/pdf'),
+        ]);
+
+        $document = Document::first();
+
+        $this->actingAs($admin)
+            ->delete(route('admin.applications.documents.destroy', [$data2['application'], $document]))
+            ->assertNotFound();
+
+        $this->assertDatabaseHas('documents', ['id' => $document->id]);
     }
 }

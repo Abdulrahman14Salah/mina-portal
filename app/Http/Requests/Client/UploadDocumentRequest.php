@@ -14,8 +14,9 @@ class UploadDocumentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'file' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
-            'application_task_id' => ['required', 'integer', 'exists:application_tasks,id'],
+            'file' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png,docx', 'max:10240'],
+            'application_task_id' => ['nullable', 'integer', 'exists:application_tasks,id'],
+            'application_id' => ['required_without:application_task_id', 'nullable', 'integer', 'exists:visa_applications,id'],
         ];
     }
 }

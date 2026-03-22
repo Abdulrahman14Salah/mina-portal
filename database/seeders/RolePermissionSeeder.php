@@ -31,6 +31,8 @@ class RolePermissionSeeder extends Seeder
             'documents.download',
             'documents.admin-upload',
             'documents.reviewer-upload',
+            'documents.delete',
+            'documents.delete-own',
             'payments.pay',
             'payments.manage',
         ];
@@ -40,7 +42,7 @@ class RolePermissionSeeder extends Seeder
         }
 
         $admin->syncPermissions($permissions);
-        $client->syncPermissions(['dashboard.client', 'documents.upload', 'payments.pay']);
+        $client->syncPermissions(['dashboard.client', 'documents.upload', 'documents.delete-own', 'payments.pay']);
         $reviewer->syncPermissions(['dashboard.reviewer', 'tasks.view', 'tasks.advance', 'tasks.reject', 'documents.download', 'documents.reviewer-upload']);
 
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
