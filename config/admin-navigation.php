@@ -14,12 +14,6 @@ return [
         'active_pattern' => 'admin.applications.*',
     ],
     [
-        'route' => 'admin.visa-types.index',
-        'label_key' => 'admin.nav_visa_types',
-        'icon' => 'identification',
-        'active_pattern' => 'admin.visa-types.*',
-    ],
-    [
         'route' => 'admin.clients.index',
         'label_key' => 'admin.nav_clients',
         'icon' => 'users',

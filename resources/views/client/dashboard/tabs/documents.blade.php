@@ -59,7 +59,7 @@
                         @error('application_task_id')
                             <p class="text-sm text-red-600">{{ $message }}</p>
                         @enderror
-                        <button type="submit" class="rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white">{{ __('documents.upload') }}</button>
+                        <button type="submit" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150 ms-3">{{ __('documents.upload') }}</button>
                     </form>
                 @endif
             </div>

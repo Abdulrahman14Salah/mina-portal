@@ -20,7 +20,7 @@ class DashboardController extends Controller
 
         $this->authorize('view', $application);
 
-        $validTabs = ['overview', 'documents', 'tasks', 'payments', 'timeline', 'messages', 'profile', 'support'];
+        $validTabs = ['overview', 'documents', 'tasks', 'payments', 'profile', 'support'];
 
         if (! in_array($tab, $validTabs, true)) {
             $tab = 'overview';

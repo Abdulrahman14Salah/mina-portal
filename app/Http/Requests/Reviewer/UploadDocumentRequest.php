@@ -15,7 +15,7 @@ class UploadDocumentRequest extends FormRequest
     {
         return [
             'file'                => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
-            'application_task_id' => ['required', 'integer', 'exists:application_tasks,id'],
+            'application_task_id' => ['nullable', 'integer', 'exists:application_tasks,id'],
         ];
     }
 }

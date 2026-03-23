@@ -10,10 +10,12 @@ class Document extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['application_id', 'application_task_id', 'uploaded_by', 'source_type', 'original_filename', 'stored_filename', 'disk', 'path', 'mime_type', 'size'];
+    protected $fillable = ['application_id', 'application_task_id', 'uploaded_by', 'source_type', 'original_filename', 'stored_filename', 'disk', 'path', 'mime_type', 'size', 'archived_at', 'expires_at'];
 
     protected $casts = [
         'size' => 'integer',
+        'archived_at' => 'datetime',
+        'expires_at' => 'datetime',
     ];
 
     public function application(): BelongsTo

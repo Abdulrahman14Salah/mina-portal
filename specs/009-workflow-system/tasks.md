@@ -559,7 +559,7 @@ The workflow engine is ~90% implemented. This tasks file closes 4 specific gaps:
                   @csrf
                   <label class="block text-sm font-medium text-gray-700" for="advance-note-{{ $task->id }}">{{ __('reviewer.note_label') }}</label>
                   <textarea id="advance-note-{{ $task->id }}" name="note" placeholder="{{ __('reviewer.note_placeholder') }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"></textarea>
-                  <button type="submit" class="rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white">{{ __('reviewer.mark_complete') }}</button>
+                  <button type="submit" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150 ms-3">{{ __('reviewer.mark_complete') }}</button>
               </form>
 
               {{-- Reject Form --}}
@@ -637,7 +637,7 @@ The workflow engine is ~90% implemented. This tasks file closes 4 specific gaps:
                           @csrf
                           <label class="block text-sm font-medium text-gray-700" for="advance-note-{{ $task->id }}">{{ __('reviewer.note_label') }}</label>
                           <textarea id="advance-note-{{ $task->id }}" name="note" placeholder="{{ __('reviewer.note_placeholder') }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"></textarea>
-                          <button type="submit" class="rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white">{{ __('reviewer.mark_complete') }}</button>
+                          <button type="submit" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150 ms-3">{{ __('reviewer.mark_complete') }}</button>
                       </form>
 
                       {{-- Reject Form --}}

@@ -11,6 +11,7 @@ class DatabaseSeeder extends Seeder
         $this->call(RolePermissionSeeder::class);
         $this->call(AdminUserSeeder::class);
         $this->call(VisaTypeSeeder::class);
+        $this->call(WorkflowBlueprintSeeder::class);
         $this->call(WorkflowStepTemplateSeeder::class);
         $this->call(PaymentStageConfigSeeder::class);
     }

@@ -74,6 +74,7 @@ class WorkflowTest extends TestCase
     {
         $reviewer = $this->makeReviewer();
         $application = $this->makeOnboardedApplication();
+        $application->update(['assigned_reviewer_id' => $reviewer->id]);
 
         $this->actingAs($reviewer)->get(route('reviewer.applications.show', $application))->assertOk()->assertSee('Application Received');
     }
@@ -86,7 +87,7 @@ class WorkflowTest extends TestCase
 
         $this->actingAs($reviewer)->post(route('reviewer.applications.tasks.advance', [$application, $task]), ['note' => 'Done'])->assertRedirect();
 
-        $this->assertSame('completed', $task->fresh()->status);
+        $this->assertSame('approved', $task->fresh()->status);
         $this->assertSame('in_progress', ApplicationTask::where('application_id', $application->id)->where('position', 2)->first()->status);
     }
 
@@ -107,6 +108,7 @@ class WorkflowTest extends TestCase
     {
         $reviewer = $this->makeReviewer();
         $application = $this->makeOnboardedApplication();
+        $application->update(['assigned_reviewer_id' => $reviewer->id]);
         $task = $application->tasks->firstWhere('status', 'in_progress');
 
         $this->actingAs($reviewer)->post(route('reviewer.applications.tasks.reject', [$application, $task]), ['note' => 'Insufficient information'])->assertRedirect();

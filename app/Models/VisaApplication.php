@@ -14,6 +14,7 @@ class VisaApplication extends Model
     protected $fillable = [
         'user_id',
         'visa_type_id',
+        'assigned_reviewer_id',
         'status',
         'full_name',
         'email',
@@ -70,5 +71,10 @@ class VisaApplication extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class, 'application_id');
+    }
+
+    public function assignedReviewer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_reviewer_id');
     }
 }

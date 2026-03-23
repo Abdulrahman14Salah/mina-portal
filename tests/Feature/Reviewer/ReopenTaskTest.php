@@ -135,6 +135,7 @@ class ReopenTaskTest extends TestCase
     {
         $reviewer = $this->makeReviewer();
         $app      = $this->makeApplication();
+        $app->update(['assigned_reviewer_id' => $reviewer->id]);
         $task     = $app->tasks->firstWhere('status', 'in_progress');
 
         $this->actingAs($reviewer)

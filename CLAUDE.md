@@ -1,6 +1,6 @@
 # portal-sass Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-03-21
+Auto-generated from all feature plans. Last updated: 2026-03-23
 
 ## Active Technologies
 - MySQL (MAMP local dev); SQLite in-memory (tests) (003-workflow-engine)
@@ -13,6 +13,13 @@ Auto-generated from all feature plans. Last updated: 2026-03-21
 - MySQL (MAMP local, port 8889) for dev; SQLite in-memory for tests (008-auth-application-entry)
 - PHP 8.2+ / Laravel 11 + spatie/laravel-permission v6+, Laravel Blade, AuditLogService (009-workflow-system)
 - MySQL (MAMP local, port 8889); SQLite in-memory (tests) (009-workflow-system)
+- PHP 8.2+ / Laravel 11 + `spatie/laravel-permission` v6+, Laravel Blade (SSR), Alpine.js v3 (011-menu-unification-foundation)
+- N/A — config file only, no migrations (011-menu-unification-foundation)
+- PHP 8.2+ / Laravel 11 + `spatie/laravel-permission` v6+, `AuditLogService` (internal) (012-workflow-integrity)
+- No schema changes — existing `application_tasks` and `visa_applications` tables (012-workflow-integrity)
+- No new tables — two migrations alter existing `workflow_sections` and `workflow_tasks` tables (013-static-workflow-structure)
+- PHP 8.2+ / Laravel 11 + `spatie/laravel-permission` v6+, `AuditLogService` (internal), `DocumentService` (internal) (015-task-type-behavior)
+- MySQL (MAMP local, port 8889) for dev; SQLite in-memory for tests; private disk for receipt files (015-task-type-behavior)
 
 - PHP 8.2+ / Laravel 11 + Laravel Breeze (Blade), Alpine.js v3, `spatie/laravel-permission` v6+ (002-client-onboarding)
 
@@ -32,9 +39,9 @@ tests/
 PHP 8.2+ / Laravel 11: Follow standard conventions
 
 ## Recent Changes
-- 009-workflow-system: Added PHP 8.2+ / Laravel 11 + spatie/laravel-permission v6+, Laravel Blade, AuditLogService
-- 008-auth-application-entry: Added PHP 8.2+ / Laravel 11 + Laravel Breeze (Blade SSR), spatie/laravel-permission v6+, Alpine.js v3
-- 007-reviewer-panel: Added PHP 8.2+ / Laravel 11 + spatie/laravel-permission v6+, Laravel Blade, local/S3 filesystem (via `FILESYSTEM_DISK`)
+- 015-task-type-behavior: Added PHP 8.2+ / Laravel 11 + `spatie/laravel-permission` v6+, `AuditLogService` (internal), `DocumentService` (internal)
+- 014-app-task-generation: Added PHP 8.2+ / Laravel 11 + `spatie/laravel-permission` v6+, `AuditLogService` (internal)
+- 013-static-workflow-structure: Added PHP 8.2+ / Laravel 11 + `spatie/laravel-permission` v6+, `AuditLogService` (internal)
 
 
 <!-- MANUAL ADDITIONS START -->

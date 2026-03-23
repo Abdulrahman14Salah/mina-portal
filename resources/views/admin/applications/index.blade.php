@@ -36,7 +36,7 @@
                             {{ __('tasks.task_summary', ['completed' => $app->completed_tasks_count ?? 0, 'total' => $app->tasks_count ?? 0]) }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <a href="{{ route('admin.applications.documents.index', $app) }}" class="text-sm text-blue-600 hover:underline">
+                            <a href="{{ route('admin.applications.show', $app) }}" class="text-sm text-blue-600 hover:underline">
                                 {{ __('admin.action_view') }}
                             </a>
                         </td>

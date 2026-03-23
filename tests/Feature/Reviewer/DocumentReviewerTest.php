@@ -40,7 +40,7 @@ class DocumentReviewerTest extends TestCase
         return $reviewer;
     }
 
-    protected function makeApplicationWithDocument(): array
+    protected function makeApplicationWithDocument(?User $assignedReviewer = null): array
     {
         $client = User::factory()->create();
         $client->assignRole('client');
@@ -72,6 +72,10 @@ class DocumentReviewerTest extends TestCase
         ApplicationTask::where('application_id', $application->id)->whereIn('position', [4, 5, 6])->update(['status' => 'pending']);
         $application->update(['status' => 'in_progress']);
 
+        if ($assignedReviewer !== null) {
+            $application->update(['assigned_reviewer_id' => $assignedReviewer->id]);
+        }
+
         $task = $application->fresh('tasks')->tasks->firstWhere('position', 3);
         $document = app(DocumentService::class)->upload($application->fresh(), $task, UploadedFile::fake()->create('passport.pdf', 100, 'application/pdf'), $client);
 
@@ -81,7 +85,7 @@ class DocumentReviewerTest extends TestCase
     public function test_reviewer_sees_documents_on_application_detail(): void
     {
         $reviewer = $this->makeReviewer();
-        $data = $this->makeApplicationWithDocument();
+        $data = $this->makeApplicationWithDocument($reviewer);
 
         $this->actingAs($reviewer)->get(route('reviewer.applications.show', $data['application']))->assertOk()->assertSee($data['document']->original_filename);
     }
@@ -89,7 +93,7 @@ class DocumentReviewerTest extends TestCase
     public function test_reviewer_can_download_document(): void
     {
         $reviewer = $this->makeReviewer();
-        $data = $this->makeApplicationWithDocument();
+        $data = $this->makeApplicationWithDocument($reviewer);
 
         $this->actingAs($reviewer)->get(route('documents.download', $data['document']))->assertOk();
     }
@@ -97,7 +101,7 @@ class DocumentReviewerTest extends TestCase
     public function test_reviewer_download_is_audit_logged(): void
     {
         $reviewer = $this->makeReviewer();
-        $data = $this->makeApplicationWithDocument();
+        $data = $this->makeApplicationWithDocument($reviewer);
 
         $this->actingAs($reviewer)->get(route('documents.download', $data['document']));
 
@@ -115,7 +119,7 @@ class DocumentReviewerTest extends TestCase
     public function test_reviewer_can_upload_document(): void
     {
         $reviewer = $this->makeReviewer();
-        $data = $this->makeApplicationWithDocument();
+        $data = $this->makeApplicationWithDocument($reviewer);
         $task = $data['application']->tasks->first();
 
         $this->actingAs($reviewer)
@@ -134,7 +138,7 @@ class DocumentReviewerTest extends TestCase
     public function test_reviewer_upload_attributed_to_reviewer(): void
     {
         $reviewer = $this->makeReviewer();
-        $data = $this->makeApplicationWithDocument();
+        $data = $this->makeApplicationWithDocument($reviewer);
         $task = $data['application']->tasks->first();
 
         $this->actingAs($reviewer)
@@ -152,7 +156,7 @@ class DocumentReviewerTest extends TestCase
     public function test_invalid_file_type_rejected_for_reviewer_upload(): void
     {
         $reviewer = $this->makeReviewer();
-        $data = $this->makeApplicationWithDocument();
+        $data = $this->makeApplicationWithDocument($reviewer);
         $task = $data['application']->tasks->first();
 
         $this->actingAs($reviewer)

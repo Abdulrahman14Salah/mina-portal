@@ -58,7 +58,6 @@ class AdminDashboardTest extends TestCase
     {
         $admin = User::factory()->create()->assignRole('admin');
         $routes = [
-            'admin.visa-types.index',
             'admin.clients.index',
             'admin.task-builder.index',
             'admin.reviewers.index',
@@ -74,7 +73,6 @@ class AdminDashboardTest extends TestCase
     {
         $client = User::factory()->create()->assignRole('client');
         $routes = [
-            'admin.visa-types.index',
             'admin.clients.index',
             'admin.task-builder.index',
             'admin.reviewers.index',

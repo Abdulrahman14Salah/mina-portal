@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
+<html lang="en">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -16,18 +16,6 @@
     </head>
     <body class="font-sans text-gray-900 antialiased">
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
-            <div class="w-full max-w-5xl px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-end gap-3 py-4 text-sm text-gray-600">
-                    <form method="POST" action="{{ route('language.switch', 'en') }}">
-                        @csrf
-                        <button type="submit" class="{{ app()->getLocale() === 'en' ? 'font-bold underline' : '' }}">{{ __('client.language_en') }}</button>
-                    </form>
-                    <form method="POST" action="{{ route('language.switch', 'ar') }}">
-                        @csrf
-                        <button type="submit" class="{{ app()->getLocale() === 'ar' ? 'font-bold underline' : '' }}">{{ __('client.language_ar') }}</button>
-                    </form>
-                </div>
-            </div>
             <div>
                 <a href="/">
                     <x-application-logo class="w-20 h-20 fill-current text-gray-500" />

@@ -11,7 +11,7 @@ class ApplicationTask extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['application_id', 'position', 'name', 'description', 'status', 'reviewer_note', 'completed_at'];
+    protected $fillable = ['application_id', 'workflow_step_template_id', 'position', 'name', 'description', 'type', 'status', 'reviewer_note', 'rejection_reason', 'completed_at'];
 
     protected $casts = [
         'position' => 'integer',
@@ -31,5 +31,10 @@ class ApplicationTask extends Model
     public function documents(): HasMany
     {
         return $this->hasMany(Document::class, 'application_task_id');
+    }
+
+    public function answers(): HasMany
+    {
+        return $this->hasMany(TaskAnswer::class);
     }
 }
