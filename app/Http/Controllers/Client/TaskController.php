@@ -16,15 +16,21 @@ class TaskController extends Controller
 {
     public function __construct(private TaskAnswerService $taskAnswerService) {}
 
-    public function show(VisaApplication $application, ApplicationTask $task): View
+    public function show(VisaApplication $application, ApplicationTask $task): View|RedirectResponse
     {
+        if ($task->status === 'pending') {
+            return redirect()->route('client.dashboard');
+        }
+
         $this->authorize('view', $application);
 
         abort_if($task->application_id !== $application->id, 404);
 
-        $task->loadMissing('documents');
+        $task->loadMissing(['documents', 'answers', 'workflowTask.questions']);
 
-        return view('client.tasks.show', compact('application', 'task'));
+        $answers = $task->answers->keyBy('task_question_id');
+
+        return view('client.tasks.show', compact('application', 'task', 'answers'));
     }
 
     public function submitAnswers(SubmitTaskAnswersRequest $request, VisaApplication $application, ApplicationTask $task): RedirectResponse

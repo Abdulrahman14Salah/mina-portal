@@ -58,8 +58,8 @@ class TaskTypeBehaviorTest extends TestCase
             'agreed_to_terms'        => true,
         ]);
 
-        $section      = WorkflowSection::create(['visa_type_id' => $visaType->id, 'name' => 'Test Section', 'position' => 1]);
-        $workflowTask = WorkflowTask::create(['workflow_section_id' => $section->id, 'name' => 'Test Task', 'type' => $taskType, 'position' => 1]);
+        $section      = WorkflowSection::create(['visa_type_id' => $visaType->id, 'name' => 'Test Section', 'position' => 99]);
+        $workflowTask = WorkflowTask::create(['workflow_section_id' => $section->id, 'name' => 'Test Task', 'type' => $taskType, 'position' => 99]);
 
         app(WorkflowService::class)->seedTasksForApplication($application);
 
@@ -197,8 +197,8 @@ class TaskTypeBehaviorTest extends TestCase
     public function test_workflow_task_has_questions_relationship(): void
     {
         $visaType = VisaType::first();
-        $section  = WorkflowSection::create(['visa_type_id' => $visaType->id, 'name' => 'S', 'position' => 1]);
-        $wfTask   = WorkflowTask::create(['workflow_section_id' => $section->id, 'name' => 'Q Task', 'type' => 'question', 'position' => 1]);
+        $section  = WorkflowSection::create(['visa_type_id' => $visaType->id, 'name' => 'S', 'position' => 98]);
+        $wfTask   = WorkflowTask::create(['workflow_section_id' => $section->id, 'name' => 'Q Task', 'type' => 'question', 'position' => 98]);
 
         TaskQuestion::create(['workflow_task_id' => $wfTask->id, 'prompt' => 'What?', 'required' => true, 'position' => 1]);
         TaskQuestion::create(['workflow_task_id' => $wfTask->id, 'prompt' => 'Why?',  'required' => false, 'position' => 2]);

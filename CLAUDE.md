@@ -20,6 +20,8 @@ Auto-generated from all feature plans. Last updated: 2026-03-23
 - No new tables — two migrations alter existing `workflow_sections` and `workflow_tasks` tables (013-static-workflow-structure)
 - PHP 8.2+ / Laravel 11 + `spatie/laravel-permission` v6+, `AuditLogService` (internal), `DocumentService` (internal) (015-task-type-behavior)
 - MySQL (MAMP local, port 8889) for dev; SQLite in-memory for tests; private disk for receipt files (015-task-type-behavior)
+- PHP 8.2+ / Laravel 11 + Laravel Blade (SSR), Alpine.js v3, `spatie/laravel-permission` v6+ (016-task-page-ui)
+- Private local disk (dev) / S3 (prod) via `FILESYSTEM_DISK` — existing document system reused for receipts (016-task-page-ui)
 
 - PHP 8.2+ / Laravel 11 + Laravel Breeze (Blade), Alpine.js v3, `spatie/laravel-permission` v6+ (002-client-onboarding)
 
@@ -39,9 +41,9 @@ tests/
 PHP 8.2+ / Laravel 11: Follow standard conventions
 
 ## Recent Changes
+- 016-task-page-ui: Added PHP 8.2+ / Laravel 11 + Laravel Blade (SSR), Alpine.js v3, `spatie/laravel-permission` v6+
 - 015-task-type-behavior: Added PHP 8.2+ / Laravel 11 + `spatie/laravel-permission` v6+, `AuditLogService` (internal), `DocumentService` (internal)
 - 014-app-task-generation: Added PHP 8.2+ / Laravel 11 + `spatie/laravel-permission` v6+, `AuditLogService` (internal)
-- 013-static-workflow-structure: Added PHP 8.2+ / Laravel 11 + `spatie/laravel-permission` v6+, `AuditLogService` (internal)
 
 
 <!-- MANUAL ADDITIONS START -->

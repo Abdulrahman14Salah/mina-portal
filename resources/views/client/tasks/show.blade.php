@@ -20,7 +20,7 @@
                 </div>
             @endif
 
-            {{-- Task Info --}}
+            {{-- Task header --}}
             <div class="rounded-lg bg-white p-6 shadow-sm">
                 <div class="flex items-start justify-between">
                     <div>
@@ -31,10 +31,10 @@
                         @endif
                     </div>
                     <span class="shrink-0 rounded-full px-3 py-1 text-xs font-medium
-                        {{ $task->status === 'approved' ? 'bg-green-100 text-green-700' : '' }}
+                        {{ $task->status === 'approved'    ? 'bg-green-100 text-green-700'   : '' }}
                         {{ $task->status === 'in_progress' ? 'bg-indigo-100 text-indigo-700' : '' }}
-                        {{ $task->status === 'rejected' ? 'bg-red-100 text-red-700' : '' }}
-                        {{ $task->status === 'pending' ? 'bg-gray-100 text-gray-600' : '' }}">
+                        {{ $task->status === 'rejected'    ? 'bg-red-100 text-red-700'       : '' }}
+                        {{ $task->status === 'pending'     ? 'bg-gray-100 text-gray-600'     : '' }}">
                         {{ __('tasks.status_' . $task->status) }}
                     </span>
                 </div>
@@ -54,76 +54,21 @@
                 @endif
             </div>
 
-            {{-- Upload Form (upload or both, when task is open) --}}
-            @if (in_array($task->type ?? 'upload', ['upload', 'both']) && in_array($task->status, ['in_progress', 'rejected']))
-                <div class="rounded-lg bg-white p-6 shadow-sm">
-                    <h2 class="text-base font-semibold text-gray-900 mb-4">{{ __('documents.upload') }}</h2>
-
-                    @if ($errors->any())
-                        <div class="mb-4 rounded-md bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-700">
-                            <ul class="list-disc list-inside space-y-1">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
-
-                    <form method="POST" action="{{ route('client.documents.store') }}" enctype="multipart/form-data">
-                        @csrf
-                        <input type="hidden" name="application_task_id" value="{{ $task->id }}">
-                        <div class="space-y-4">
-                            <div>
-                                <label for="file" class="block text-sm font-medium text-gray-700 mb-1">
-                                    {{ __('documents.choose_file') }}
-                                </label>
-                                <input type="file" name="file" id="file" accept=".pdf,.jpg,.jpeg,.png,.docx"
-                                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
-                                <p class="mt-1 text-xs text-gray-400">{{ __('documents.upload_help') }}</p>
-                            </div>
-                            <button type="submit"
-                                class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500">
-                                {{ __('documents.upload') }}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            @endif
-
-            {{-- Text Input placeholder (text or both) --}}
-            @if (in_array($task->type ?? 'upload', ['text', 'both']) && in_array($task->status, ['in_progress', 'rejected']))
-                <div class="rounded-lg bg-white p-6 shadow-sm">
-                    <h2 class="text-base font-semibold text-gray-900 mb-4">{{ __('tasks.text_input_label') }}</h2>
-                    <p class="text-sm text-gray-500">{{ __('tasks.text_input_coming_soon') }}</p>
-                </div>
-            @endif
-
-            {{-- Uploaded Documents --}}
-            @if (in_array($task->type ?? 'upload', ['upload', 'both']))
-                <div class="rounded-lg bg-white p-6 shadow-sm">
-                    <h2 class="text-base font-semibold text-gray-900 mb-4">{{ __('documents.documents_section') }}</h2>
-                    @forelse ($task->documents as $doc)
-                        <div class="flex items-center justify-between py-2 border-b text-sm text-gray-700">
-                            <span>{{ $doc->original_filename }}</span>
-                            <div class="flex items-center gap-3">
-                                <a href="{{ route('documents.download', $doc) }}"
-                                    class="text-blue-600 hover:underline text-xs">{{ __('documents.download') }}</a>
-                                @if ($task->status === 'in_progress' && $doc->uploaded_by === Auth::id())
-                                    <form method="POST" action="{{ route('client.documents.destroy', $doc) }}"
-                                        onsubmit="return confirm('{{ __('documents.delete_confirm') }}')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:underline text-xs">
-                                            {{ __('admin.delete') }}
-                                        </button>
-                                    </form>
-                                @endif
-                            </div>
-                        </div>
-                    @empty
-                        <p class="text-sm text-gray-500">{{ __('documents.no_documents') }}</p>
-                    @endforelse
-                </div>
+            {{-- Type-specific UI --}}
+            @if ($task->type === 'question')
+                @if (in_array($task->status, ['in_progress', 'rejected']))
+                    @include('client.tasks.partials._question-form')
+                @elseif ($task->status === 'approved')
+                    @include('client.tasks.partials._answers-readonly')
+                @endif
+            @elseif ($task->type === 'payment')
+                @if (in_array($task->status, ['in_progress', 'rejected']))
+                    @include('client.tasks.partials._payment-form')
+                @elseif ($task->status === 'approved')
+                    @include('client.tasks.partials._receipt-readonly')
+                @endif
+            @elseif ($task->type === 'info')
+                @include('client.tasks.partials._info-content')
             @endif
 
             {{-- Back link --}}

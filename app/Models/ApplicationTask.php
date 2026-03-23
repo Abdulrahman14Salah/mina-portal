@@ -11,7 +11,7 @@ class ApplicationTask extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['application_id', 'workflow_step_template_id', 'position', 'name', 'description', 'type', 'status', 'reviewer_note', 'rejection_reason', 'completed_at'];
+    protected $fillable = ['application_id', 'workflow_step_template_id', 'workflow_task_id', 'position', 'name', 'description', 'type', 'status', 'reviewer_note', 'rejection_reason', 'completed_at'];
 
     protected $casts = [
         'position' => 'integer',
@@ -26,6 +26,11 @@ class ApplicationTask extends Model
     public function template(): BelongsTo
     {
         return $this->belongsTo(WorkflowStepTemplate::class, 'workflow_step_template_id');
+    }
+
+    public function workflowTask(): BelongsTo
+    {
+        return $this->belongsTo(WorkflowTask::class);
     }
 
     public function documents(): HasMany

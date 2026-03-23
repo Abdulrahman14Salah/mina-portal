@@ -40,13 +40,14 @@ class WorkflowService
                 foreach ($sections as $section) {
                     foreach ($section->tasks as $workflowTask) {
                         $tasks[] = ApplicationTask::create([
-                            'application_id'            => $application->id,
+                            'application_id' => $application->id,
                             'workflow_step_template_id' => null,
-                            'position'                  => $position++,
-                            'name'                      => $workflowTask->name,
-                            'description'               => $workflowTask->description,
-                            'type'                      => $workflowTask->type,
-                            'status'                    => 'pending',
+                            'workflow_task_id' => $workflowTask->id,
+                            'position' => $position++,
+                            'name' => $workflowTask->name,
+                            'description' => $workflowTask->description,
+                            'type' => $workflowTask->type,
+                            'status' => 'pending',
                         ]);
                     }
                 }
@@ -62,13 +63,13 @@ class WorkflowService
 
                 foreach ($templates as $template) {
                     $tasks[] = ApplicationTask::create([
-                        'application_id'            => $application->id,
+                        'application_id' => $application->id,
                         'workflow_step_template_id' => $template->id,
-                        'position'                  => $template->position,
-                        'name'                      => $template->name,
-                        'description'               => $template->description,
-                        'type'                      => 'upload',
-                        'status'                    => 'pending',
+                        'position' => $template->position,
+                        'name' => $template->name,
+                        'description' => $template->description,
+                        'type' => 'upload',
+                        'status' => 'pending',
                     ]);
                 }
             }
@@ -95,8 +96,8 @@ class WorkflowService
             }
 
             $task->update([
-                'status'        => 'approved',
-                'completed_at'  => now(),
+                'status' => 'approved',
+                'completed_at' => now(),
                 'reviewer_note' => $note,
             ]);
 
@@ -123,8 +124,8 @@ class WorkflowService
             }
 
             $task->update([
-                'status'        => 'approved',
-                'completed_at'  => now(),
+                'status' => 'approved',
+                'completed_at' => now(),
                 'reviewer_note' => $note,
             ]);
 
@@ -139,7 +140,7 @@ class WorkflowService
         });
 
         $this->auditLog->log('task_approved', $this->actor(), [
-            'task'      => $task->name,
+            'task' => $task->name,
             'reference' => $task->application->reference_number,
         ]);
     }
@@ -154,8 +155,8 @@ class WorkflowService
             }
 
             $task->update([
-                'status'        => 'rejected',
-                'completed_at'  => now(),
+                'status' => 'rejected',
+                'completed_at' => now(),
                 'reviewer_note' => $note,
             ]);
         });
@@ -173,14 +174,14 @@ class WorkflowService
             }
 
             $task->update([
-                'status'           => 'rejected',
+                'status' => 'rejected',
                 'rejection_reason' => $reason,
-                'completed_at'     => now(),
+                'completed_at' => now(),
             ]);
         });
 
         $this->auditLog->log('task_rejected', $this->actor(), [
-            'task'      => $task->name,
+            'task' => $task->name,
             'reference' => $task->application->reference_number,
         ]);
     }
@@ -195,17 +196,17 @@ class WorkflowService
             }
 
             $task->update([
-                'status'           => 'in_progress',
-                'reviewer_note'    => null,
+                'status' => 'in_progress',
+                'reviewer_note' => null,
                 'rejection_reason' => null,
-                'completed_at'     => null,
+                'completed_at' => null,
             ]);
         });
 
         $this->auditLog->log('task_reopened', $this->actor(), [
-            'task_id'        => $task->id,
+            'task_id' => $task->id,
             'application_id' => $task->application_id,
-            'task_name'      => $task->name,
+            'task_name' => $task->name,
         ]);
     }
 

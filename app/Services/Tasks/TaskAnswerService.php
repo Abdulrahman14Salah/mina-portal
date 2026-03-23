@@ -21,8 +21,8 @@ class TaskAnswerService
 
     public function submitAnswers(ApplicationTask $task, array $answers, User $client): void
     {
-        if ($task->status !== 'in_progress') {
-            throw new InvalidArgumentException('Only an in_progress task can accept answer submissions.');
+        if (! in_array($task->status, ['in_progress', 'rejected'], true)) {
+            throw new InvalidArgumentException('Only an in_progress or rejected task can accept answer submissions.');
         }
 
         DB::transaction(function () use ($task, $answers): void {
@@ -32,18 +32,22 @@ class TaskAnswerService
                     ['answer' => $answerText]
                 );
             }
+
+            if ($task->status === 'rejected') {
+                $task->update(['status' => 'in_progress', 'rejection_reason' => null]);
+            }
         });
 
         $this->auditLog->log('task_answers_submitted', $client, [
-            'task_id'   => $task->id,
+            'task_id' => $task->id,
             'reference' => $task->application->reference_number,
         ]);
     }
 
     public function uploadReceipt(ApplicationTask $task, UploadedFile $file, User $client): Document
     {
-        if ($task->status !== 'in_progress') {
-            throw new InvalidArgumentException('Only an in_progress task can receive a receipt upload.');
+        if (! in_array($task->status, ['in_progress', 'rejected'], true)) {
+            throw new InvalidArgumentException('Only an in_progress or rejected task can receive a receipt upload.');
         }
 
         $existing = $task->documents()
@@ -51,16 +55,19 @@ class TaskAnswerService
             ->whereNull('archived_at')
             ->first();
 
-        if ($existing) {
-            $this->documentService->delete($existing, $client);
-        }
-
-        return $this->documentService->upload(
+        // Upload first — if this throws, the existing receipt is preserved
+        $document = $this->documentService->upload(
             $task->application,
             $task,
             $file,
             $client,
             'client'
         );
+
+        if ($existing) {
+            $this->documentService->delete($existing, $client);
+        }
+
+        return $document;
     }
 }
