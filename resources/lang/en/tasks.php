@@ -34,4 +34,7 @@ return [
     'upload_receipt' => 'Upload Receipt',
     'info_task_note' => 'This task contains information only. No action is required from you.',
     'answers_readonly_title' => 'Submitted Answers',
+    'task_locked' => 'This task is not yet available.',
+    'workflow_complete_title' => 'All Tasks Complete',
+    'workflow_complete_message' => 'All workflow tasks have been completed. Your application is now under final review.',
 ];

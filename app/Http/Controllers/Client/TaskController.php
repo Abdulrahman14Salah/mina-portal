@@ -38,6 +38,10 @@ class TaskController extends Controller
         $this->authorize('view', $application);
         abort_if($task->application_id !== $application->id, 404);
 
+        if ($task->status === 'pending') {
+            return redirect()->back()->with('error', __('tasks.task_locked'));
+        }
+
         $this->taskAnswerService->submitAnswers($task, $request->input('answers'), Auth::user());
 
         return redirect()->back()->with('success', __('tasks.answers_submitted'));
@@ -47,6 +51,10 @@ class TaskController extends Controller
     {
         $this->authorize('view', $application);
         abort_if($task->application_id !== $application->id, 404);
+
+        if ($task->status === 'pending') {
+            return redirect()->back()->with('error', __('tasks.task_locked'));
+        }
 
         $this->taskAnswerService->uploadReceipt($task, $request->file('receipt'), Auth::user());
 

@@ -41,9 +41,9 @@ tests/
 PHP 8.2+ / Laravel 11: Follow standard conventions
 
 ## Recent Changes
+- 017-task-progression: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 - 016-task-page-ui: Added PHP 8.2+ / Laravel 11 + Laravel Blade (SSR), Alpine.js v3, `spatie/laravel-permission` v6+
 - 015-task-type-behavior: Added PHP 8.2+ / Laravel 11 + `spatie/laravel-permission` v6+, `AuditLogService` (internal), `DocumentService` (internal)
-- 014-app-task-generation: Added PHP 8.2+ / Laravel 11 + `spatie/laravel-permission` v6+, `AuditLogService` (internal)
 
 
 <!-- MANUAL ADDITIONS START -->

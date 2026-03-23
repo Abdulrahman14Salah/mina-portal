@@ -88,7 +88,9 @@ class WorkflowService
 
     public function advanceTask(ApplicationTask $task, ?string $note): void
     {
-        DB::transaction(function () use ($task, $note): void {
+        $workflowComplete = false;
+
+        DB::transaction(function () use ($task, $note, &$workflowComplete): void {
             $task = ApplicationTask::lockForUpdate()->findOrFail($task->id);
 
             if ($task->status !== 'in_progress') {
@@ -108,15 +110,29 @@ class WorkflowService
 
             if ($nextTask) {
                 $nextTask->update(['status' => 'in_progress']);
+            } else {
+                $task->application->update(['status' => 'workflow_complete']);
+                $workflowComplete = true;
             }
         });
 
-        $this->auditLog->log('task_completed', $this->actor(), ['task' => $task->name, 'reference' => $task->application->reference_number]);
+        $this->auditLog->log('task_completed', $this->actor(), [
+            'task' => $task->name,
+            'reference' => $task->application->reference_number,
+        ]);
+
+        if ($workflowComplete) {
+            $this->auditLog->log('workflow_tasks_complete', $this->actor(), [
+                'reference' => $task->application->reference_number,
+            ]);
+        }
     }
 
     public function approveTask(ApplicationTask $task, ?string $note): void
     {
-        DB::transaction(function () use ($task, $note): void {
+        $workflowComplete = false;
+
+        DB::transaction(function () use ($task, $note, &$workflowComplete): void {
             $task = ApplicationTask::lockForUpdate()->findOrFail($task->id);
 
             if ($task->status !== 'in_progress') {
@@ -136,6 +152,9 @@ class WorkflowService
 
             if ($nextTask) {
                 $nextTask->update(['status' => 'in_progress']);
+            } else {
+                $task->application->update(['status' => 'workflow_complete']);
+                $workflowComplete = true;
             }
         });
 
@@ -143,6 +162,12 @@ class WorkflowService
             'task' => $task->name,
             'reference' => $task->application->reference_number,
         ]);
+
+        if ($workflowComplete) {
+            $this->auditLog->log('workflow_tasks_complete', $this->actor(), [
+                'reference' => $task->application->reference_number,
+            ]);
+        }
     }
 
     public function rejectTask(ApplicationTask $task, ?string $note): void
