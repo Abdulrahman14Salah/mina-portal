@@ -21,9 +21,13 @@ class DashboardController extends Controller
         $user = Auth::user();
 
         $applications = $tab === 'applications'
-            ? VisaApplication::with(['visaType', 'user', 'tasks' => fn ($q) => $q->whereIn('status', ['in_progress', 'pending_review'])])
+            ? VisaApplication::with([
+                'visaType',
+                'user',
+                'tasks' => fn ($q) => $q->whereIn('status', ['in_progress', 'pending_review'])->orderBy('position'),
+            ])
                 ->where('assigned_reviewer_id', $user->id)
-                ->whereIn('status', ['pending_review', 'in_progress'])
+                ->whereHas('tasks', fn ($q) => $q->whereIn('status', ['in_progress', 'pending_review']))
                 ->orderBy('created_at')
                 ->get()
             : collect();

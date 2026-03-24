@@ -66,8 +66,26 @@ class WorkflowTest extends TestCase
     {
         $reviewer = $this->makeReviewer();
         $application = $this->makeOnboardedApplication();
+        $application->update(['assigned_reviewer_id' => $reviewer->id]);
 
         $this->actingAs($reviewer)->get('/reviewer/dashboard')->assertOk()->assertSee($application->reference_number);
+    }
+
+    public function test_reviewer_sees_application_when_task_is_actionable_even_if_application_status_is_unexpected(): void
+    {
+        $reviewer = $this->makeReviewer();
+        $application = $this->makeOnboardedApplication();
+        $application->update([
+            'assigned_reviewer_id' => $reviewer->id,
+            'status' => 'submitted',
+        ]);
+
+        $task = $application->tasks()->where('status', 'in_progress')->firstOrFail();
+        $task->update(['status' => 'pending_review']);
+
+        $this->actingAs($reviewer)->get('/reviewer/dashboard')
+            ->assertOk()
+            ->assertSee($application->reference_number);
     }
 
     public function test_reviewer_can_view_application_detail(): void
