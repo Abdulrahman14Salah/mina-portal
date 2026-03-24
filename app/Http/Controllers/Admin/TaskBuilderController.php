@@ -54,7 +54,7 @@ class TaskBuilderController extends Controller
             'name' => $request->name,
             'description' => $request->description,
             'type' => $request->type,
-            'approval_mode' => $request->input('approval_mode'), // nullable — null for non-question tasks
+            'approval_mode' => $request->type === 'question' ? $request->input('approval_mode') : null,
             'position' => $maxPosition + 1,
         ]);
 

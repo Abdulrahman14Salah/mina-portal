@@ -182,6 +182,7 @@ class WorkflowIntegrityTest extends TestCase
         app(WorkflowService::class)->seedTasksForApplication($application);
 
         $tasks = ApplicationTask::where('application_id', $application->id)->orderBy('position')->get();
+        $tasks[0]->update(['status' => 'pending_review']);
 
         app(WorkflowService::class)->approveTask($tasks[0], null);
 

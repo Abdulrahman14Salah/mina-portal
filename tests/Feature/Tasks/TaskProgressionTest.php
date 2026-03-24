@@ -81,6 +81,7 @@ class TaskProgressionTest extends TestCase
     public function test_approving_task_activates_next_task(): void
     {
         [, , $application, $appTasks] = $this->makeApplication(2);
+        $appTasks[0]->update(['status' => 'pending_review']);
 
         app(WorkflowService::class)->approveTask($appTasks[0], null);
 
@@ -92,6 +93,7 @@ class TaskProgressionTest extends TestCase
     public function test_approving_last_task_sets_workflow_complete(): void
     {
         [, , $application, $appTasks] = $this->makeApplication(1);
+        $appTasks[0]->update(['status' => 'pending_review']);
 
         app(WorkflowService::class)->approveTask($appTasks[0], null);
 
@@ -102,6 +104,7 @@ class TaskProgressionTest extends TestCase
     public function test_approving_last_task_does_not_throw(): void
     {
         [, , , $appTasks] = $this->makeApplication(1);
+        $appTasks[0]->update(['status' => 'pending_review']);
 
         $this->expectNotToPerformAssertions();
 
@@ -190,6 +193,7 @@ class TaskProgressionTest extends TestCase
     public function test_dashboard_shows_workflow_complete_banner(): void
     {
         [$client, , $application, $appTasks] = $this->makeApplication(1);
+        $appTasks[0]->update(['status' => 'pending_review']);
 
         app(WorkflowService::class)->approveTask($appTasks[0], null);
 

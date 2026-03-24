@@ -69,6 +69,7 @@ class TaskApproveRejectTest extends TestCase
         $reviewer    = $this->makeReviewer();
         $application = $this->makeApplication($reviewer);
         $task        = $application->tasks->firstWhere('status', 'in_progress');
+        $task->update(['status' => 'pending_review']);
 
         $this->actingAs($reviewer)
             ->post(route('reviewer.tasks.approve', $task))
@@ -82,6 +83,7 @@ class TaskApproveRejectTest extends TestCase
         $reviewer    = $this->makeReviewer();
         $application = $this->makeApplication($reviewer);
         $task        = $application->tasks->firstWhere('status', 'in_progress');
+        $task->update(['status' => 'pending_review']);
 
         $this->actingAs($reviewer)
             ->post(route('reviewer.tasks.approve', $task));
@@ -99,12 +101,13 @@ class TaskApproveRejectTest extends TestCase
         $unassignedReviewer = $this->makeReviewer();
         $application        = $this->makeApplication($assignedReviewer);
         $task               = $application->tasks->firstWhere('status', 'in_progress');
+        $task->update(['status' => 'pending_review']);
 
         $this->actingAs($unassignedReviewer)
             ->post(route('reviewer.tasks.approve', $task))
             ->assertForbidden();
 
-        $this->assertSame('in_progress', $task->fresh()->status);
+        $this->assertSame('pending_review', $task->fresh()->status);
     }
 
     public function test_client_cannot_approve_task(): void
@@ -112,6 +115,7 @@ class TaskApproveRejectTest extends TestCase
         $reviewer    = $this->makeReviewer();
         $application = $this->makeApplication($reviewer);
         $task        = $application->tasks->firstWhere('status', 'in_progress');
+        $task->update(['status' => 'pending_review']);
         $client      = $application->user;
 
         $this->actingAs($client)
@@ -125,6 +129,7 @@ class TaskApproveRejectTest extends TestCase
         $reviewer = $this->makeReviewer();
         $application = $this->makeApplication($reviewer);
         $task     = $application->tasks->firstWhere('status', 'in_progress');
+        $task->update(['status' => 'pending_review']);
 
         $this->actingAs($admin)
             ->post(route('reviewer.tasks.approve', $task))
@@ -140,6 +145,7 @@ class TaskApproveRejectTest extends TestCase
         $reviewer    = $this->makeReviewer();
         $application = $this->makeApplication($reviewer);
         $task        = $application->tasks->firstWhere('status', 'in_progress');
+        $task->update(['status' => 'pending_review']);
 
         $this->actingAs($reviewer)
             ->post(route('reviewer.tasks.reject', $task), [
@@ -157,6 +163,7 @@ class TaskApproveRejectTest extends TestCase
         $reviewer    = $this->makeReviewer();
         $application = $this->makeApplication($reviewer);
         $task        = $application->tasks->firstWhere('status', 'in_progress');
+        $task->update(['status' => 'pending_review']);
 
         $this->actingAs($reviewer)
             ->post(route('reviewer.tasks.reject', $task), [
@@ -164,7 +171,7 @@ class TaskApproveRejectTest extends TestCase
             ])
             ->assertSessionHasErrors('rejection_reason');
 
-        $this->assertSame('in_progress', $task->fresh()->status);
+        $this->assertSame('pending_review', $task->fresh()->status);
     }
 
     public function test_unassigned_reviewer_cannot_reject_task(): void
@@ -173,6 +180,7 @@ class TaskApproveRejectTest extends TestCase
         $unassignedReviewer = $this->makeReviewer();
         $application        = $this->makeApplication($assignedReviewer);
         $task               = $application->tasks->firstWhere('status', 'in_progress');
+        $task->update(['status' => 'pending_review']);
 
         $this->actingAs($unassignedReviewer)
             ->post(route('reviewer.tasks.reject', $task), [
@@ -186,6 +194,7 @@ class TaskApproveRejectTest extends TestCase
         $reviewer    = $this->makeReviewer();
         $application = $this->makeApplication($reviewer);
         $task        = $application->tasks->firstWhere('status', 'in_progress');
+        $task->update(['status' => 'pending_review']);
         $client      = $application->user;
 
         $this->actingAs($client)
@@ -201,6 +210,7 @@ class TaskApproveRejectTest extends TestCase
         $reviewer    = $this->makeReviewer();
         $application = $this->makeApplication($reviewer);
         $task        = $application->tasks->firstWhere('status', 'in_progress');
+        $task->update(['status' => 'pending_review']);
 
         $this->actingAs($admin)
             ->post(route('reviewer.tasks.reject', $task), [
@@ -220,6 +230,7 @@ class TaskApproveRejectTest extends TestCase
         $task        = $application->tasks->firstWhere('status', 'in_progress');
         $client      = $application->user;
 
+        $task->update(['status' => 'pending_review']);
         app(WorkflowService::class)->rejectTaskWithReason($task, 'Document missing.');
         $task->refresh();
         $this->assertSame('rejected', $task->status);

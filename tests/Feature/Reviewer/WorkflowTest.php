@@ -66,6 +66,7 @@ class WorkflowTest extends TestCase
     {
         $reviewer = $this->makeReviewer();
         $application = $this->makeOnboardedApplication();
+        $application->update(['assigned_reviewer_id' => $reviewer->id]);
 
         $this->actingAs($reviewer)->get('/reviewer/dashboard')->assertOk()->assertSee($application->reference_number);
     }
