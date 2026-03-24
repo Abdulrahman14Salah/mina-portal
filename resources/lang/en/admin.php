@@ -52,4 +52,10 @@ return [
     'client_label' => 'Client',
     'visa_type_label' => 'Visa Type',
     'submitted_label' => 'Submitted',
+
+    'task_type_question'     => 'Question',
+    'task_type_payment'      => 'Payment',
+    'task_type_info'         => 'Info',
+    'approval_mode_manual'   => 'Manual Approval',
+    'approval_mode_auto'     => 'Auto-Complete',
 ];

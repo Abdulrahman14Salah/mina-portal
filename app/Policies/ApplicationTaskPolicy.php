@@ -42,4 +42,11 @@ class ApplicationTaskPolicy
     {
         return $user->can('tasks.advance');
     }
+
+    public function submitForReview(User $user, ApplicationTask $task): bool
+    {
+        return $user->can('tasks.submit-for-review')
+            && $task->application->user_id === $user->id
+            && $task->status === 'in_progress';
+    }
 }

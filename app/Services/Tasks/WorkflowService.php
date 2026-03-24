@@ -2,6 +2,7 @@
 
 namespace App\Services\Tasks;
 
+use App\Mail\TaskSubmittedForReviewMail;
 use App\Models\ApplicationTask;
 use App\Models\User;
 use App\Models\VisaApplication;
@@ -10,6 +11,7 @@ use App\Models\WorkflowStepTemplate;
 use App\Services\Auth\AuditLogService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use InvalidArgumentException;
 
 class WorkflowService
@@ -22,7 +24,6 @@ class WorkflowService
             return;
         }
 
-        // Prefer new section-based structure if present
         $hasSections = WorkflowSection::where('visa_type_id', $application->visa_type_id)->exists();
 
         $seeded = false;
@@ -40,19 +41,19 @@ class WorkflowService
                 foreach ($sections as $section) {
                     foreach ($section->tasks as $workflowTask) {
                         $tasks[] = ApplicationTask::create([
-                            'application_id' => $application->id,
+                            'application_id'           => $application->id,
                             'workflow_step_template_id' => null,
-                            'workflow_task_id' => $workflowTask->id,
-                            'position' => $position++,
-                            'name' => $workflowTask->name,
-                            'description' => $workflowTask->description,
-                            'type' => $workflowTask->type,
-                            'status' => 'pending',
+                            'workflow_task_id'          => $workflowTask->id,
+                            'position'                 => $position++,
+                            'name'                     => $workflowTask->name,
+                            'description'              => $workflowTask->description,
+                            'type'                     => $workflowTask->type,
+                            'approval_mode'            => $workflowTask->approval_mode,
+                            'status'                   => 'pending',
                         ]);
                     }
                 }
             } else {
-                // Fallback: legacy flat templates
                 $templates = WorkflowStepTemplate::where('visa_type_id', $application->visa_type_id)
                     ->orderBy('position')
                     ->get();
@@ -63,13 +64,13 @@ class WorkflowService
 
                 foreach ($templates as $template) {
                     $tasks[] = ApplicationTask::create([
-                        'application_id' => $application->id,
+                        'application_id'           => $application->id,
                         'workflow_step_template_id' => $template->id,
-                        'position' => $template->position,
-                        'name' => $template->name,
-                        'description' => $template->description,
-                        'type' => 'upload',
-                        'status' => 'pending',
+                        'position'                 => $template->position,
+                        'name'                     => $template->name,
+                        'description'              => $template->description,
+                        'type'                     => 'upload',
+                        'status'                   => 'pending',
                     ]);
                 }
             }
@@ -86,6 +87,83 @@ class WorkflowService
         }
     }
 
+    /**
+     * Client explicitly submits a task for reviewer attention.
+     * Transitions: in_progress → pending_review
+     * Sends email notification to assigned reviewer.
+     */
+    public function submitForReview(ApplicationTask $task): void
+    {
+        DB::transaction(function () use ($task): void {
+            $task = ApplicationTask::lockForUpdate()->findOrFail($task->id);
+
+            if ($task->status !== 'in_progress') {
+                throw new InvalidArgumentException('Only an in_progress task can be submitted for review.');
+            }
+
+            $task->update(['status' => 'pending_review']);
+        });
+
+        $this->auditLog->log('task_submitted_for_review', $this->actor(), [
+            'task_id'    => $task->id,
+            'task_name'  => $task->name,
+            'reference'  => $task->application->reference_number,
+        ]);
+
+        $reviewer = $task->application->assignedReviewer;
+
+        if ($reviewer) {
+            Mail::to($reviewer->email)->queue(new TaskSubmittedForReviewMail($task));
+        }
+    }
+
+    /**
+     * Auto-completes a question task when approval_mode = 'auto'.
+     * Transitions: in_progress → approved (bypasses pending_review entirely).
+     * Called internally by TaskAnswerService after answer submission.
+     */
+    public function autoCompleteTask(ApplicationTask $task): void
+    {
+        $workflowComplete = false;
+
+        DB::transaction(function () use ($task, &$workflowComplete): void {
+            $task = ApplicationTask::lockForUpdate()->findOrFail($task->id);
+
+            if ($task->status !== 'in_progress') {
+                throw new InvalidArgumentException('Only an in_progress task can be auto-completed.');
+            }
+
+            $task->update([
+                'status'      => 'approved',
+                'completed_at' => now(),
+                'reviewed_at' => now(),
+            ]);
+
+            $nextTask = ApplicationTask::where('application_id', $task->application_id)
+                ->where('position', '>', $task->position)
+                ->orderBy('position')
+                ->first();
+
+            if ($nextTask) {
+                $nextTask->update(['status' => 'in_progress']);
+            } else {
+                $task->application->update(['status' => 'workflow_complete']);
+                $workflowComplete = true;
+            }
+        });
+
+        $this->auditLog->log('task_auto_completed', $this->actor(), [
+            'task'      => $task->name,
+            'reference' => $task->application->reference_number,
+        ]);
+
+        if ($workflowComplete) {
+            $this->auditLog->log('workflow_tasks_complete', $this->actor(), [
+                'reference' => $task->application->reference_number,
+            ]);
+        }
+    }
+
     public function advanceTask(ApplicationTask $task, ?string $note): void
     {
         $workflowComplete = false;
@@ -98,7 +176,7 @@ class WorkflowService
             }
 
             $task->update([
-                'status' => 'approved',
+                'status'      => 'approved',
                 'completed_at' => now(),
                 'reviewer_note' => $note,
             ]);
@@ -117,7 +195,7 @@ class WorkflowService
         });
 
         $this->auditLog->log('task_completed', $this->actor(), [
-            'task' => $task->name,
+            'task'      => $task->name,
             'reference' => $task->application->reference_number,
         ]);
 
@@ -128,21 +206,29 @@ class WorkflowService
         }
     }
 
+    /**
+     * Reviewer approves a task.
+     * Requires: pending_review status.
+     * Sets reviewed_by and reviewed_at for audit trail.
+     */
     public function approveTask(ApplicationTask $task, ?string $note): void
     {
         $workflowComplete = false;
+        $actor = $this->actor();
 
-        DB::transaction(function () use ($task, $note, &$workflowComplete): void {
+        DB::transaction(function () use ($task, $note, $actor, &$workflowComplete): void {
             $task = ApplicationTask::lockForUpdate()->findOrFail($task->id);
 
-            if ($task->status !== 'in_progress') {
-                throw new InvalidArgumentException('Only an in_progress task can be approved.');
+            if ($task->status !== 'pending_review') {
+                throw new InvalidArgumentException('Only a pending_review task can be approved.');
             }
 
             $task->update([
-                'status' => 'approved',
-                'completed_at' => now(),
+                'status'        => 'approved',
+                'completed_at'  => now(),
                 'reviewer_note' => $note,
+                'reviewed_by'   => $actor?->id,
+                'reviewed_at'   => now(),
             ]);
 
             $nextTask = ApplicationTask::where('application_id', $task->application_id)
@@ -158,13 +244,13 @@ class WorkflowService
             }
         });
 
-        $this->auditLog->log('task_approved', $this->actor(), [
-            'task' => $task->name,
+        $this->auditLog->log('task_approved', $actor, [
+            'task'      => $task->name,
             'reference' => $task->application->reference_number,
         ]);
 
         if ($workflowComplete) {
-            $this->auditLog->log('workflow_tasks_complete', $this->actor(), [
+            $this->auditLog->log('workflow_tasks_complete', $actor, [
                 'reference' => $task->application->reference_number,
             ]);
         }
@@ -180,7 +266,7 @@ class WorkflowService
             }
 
             $task->update([
-                'status' => 'rejected',
+                'status'       => 'rejected',
                 'completed_at' => now(),
                 'reviewer_note' => $note,
             ]);
@@ -189,24 +275,33 @@ class WorkflowService
         $this->auditLog->log('task_rejected', $this->actor(), ['task' => $task->name, 'reference' => $task->application->reference_number]);
     }
 
+    /**
+     * Reviewer rejects a task with a reason.
+     * Requires: pending_review status.
+     * Sets reviewed_by and reviewed_at for audit trail.
+     */
     public function rejectTaskWithReason(ApplicationTask $task, string $reason): void
     {
-        DB::transaction(function () use ($task, $reason): void {
+        $actor = $this->actor();
+
+        DB::transaction(function () use ($task, $reason, $actor): void {
             $task = ApplicationTask::lockForUpdate()->findOrFail($task->id);
 
-            if ($task->status !== 'in_progress') {
-                throw new InvalidArgumentException('Only an in_progress task can be rejected.');
+            if ($task->status !== 'pending_review') {
+                throw new InvalidArgumentException('Only a pending_review task can be rejected.');
             }
 
             $task->update([
-                'status' => 'rejected',
+                'status'           => 'rejected',
                 'rejection_reason' => $reason,
-                'completed_at' => now(),
+                'completed_at'     => now(),
+                'reviewed_by'      => $actor?->id,
+                'reviewed_at'      => now(),
             ]);
         });
 
-        $this->auditLog->log('task_rejected', $this->actor(), [
-            'task' => $task->name,
+        $this->auditLog->log('task_rejected', $actor, [
+            'task'      => $task->name,
             'reference' => $task->application->reference_number,
         ]);
     }
@@ -221,17 +316,17 @@ class WorkflowService
             }
 
             $task->update([
-                'status' => 'in_progress',
-                'reviewer_note' => null,
+                'status'           => 'in_progress',
+                'reviewer_note'    => null,
                 'rejection_reason' => null,
-                'completed_at' => null,
+                'completed_at'     => null,
             ]);
         });
 
         $this->auditLog->log('task_reopened', $this->actor(), [
-            'task_id' => $task->id,
+            'task_id'        => $task->id,
             'application_id' => $task->application_id,
-            'task_name' => $task->name,
+            'task_name'      => $task->name,
         ]);
     }
 
