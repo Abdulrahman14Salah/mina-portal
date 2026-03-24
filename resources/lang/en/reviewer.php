@@ -37,4 +37,5 @@ return [
     'source_client' => 'Client Upload',
     'source_reviewer' => 'Reviewer Upload',
     'source_admin' => 'Admin Upload',
+    'pending_review_count' => ':count tasks awaiting your review',
 ];

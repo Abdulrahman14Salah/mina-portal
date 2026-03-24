@@ -31,10 +31,11 @@
                         @endif
                     </div>
                     <span class="shrink-0 rounded-full px-3 py-1 text-xs font-medium
-                        {{ $task->status === 'approved'    ? 'bg-green-100 text-green-700'   : '' }}
-                        {{ $task->status === 'in_progress' ? 'bg-indigo-100 text-indigo-700' : '' }}
-                        {{ $task->status === 'rejected'    ? 'bg-red-100 text-red-700'       : '' }}
-                        {{ $task->status === 'pending'     ? 'bg-gray-100 text-gray-600'     : '' }}">
+                        {{ $task->status === 'approved'        ? 'bg-green-100 text-green-700'   : '' }}
+                        {{ $task->status === 'in_progress'     ? 'bg-indigo-100 text-indigo-700' : '' }}
+                        {{ $task->status === 'pending_review'  ? 'bg-amber-100 text-amber-700'   : '' }}
+                        {{ $task->status === 'rejected'        ? 'bg-red-100 text-red-700'       : '' }}
+                        {{ $task->status === 'pending'         ? 'bg-gray-100 text-gray-600'     : '' }}">
                         {{ __('tasks.status_' . $task->status) }}
                     </span>
                 </div>
@@ -54,7 +55,15 @@
                 @endif
             </div>
 
-            {{-- Type-specific UI --}}
+            {{-- Awaiting Review state --}}
+            @if ($task->status === 'pending_review')
+                <div class="rounded-lg bg-amber-50 border border-amber-200 p-6">
+                    <h2 class="font-semibold text-amber-900 mb-1">{{ __('tasks.awaiting_review') }}</h2>
+                    <p class="text-sm text-amber-700">{{ __('tasks.awaiting_review_description') }}</p>
+                </div>
+            @endif
+
+            {{-- Type-specific UI (only shown when in_progress or rejected) --}}
             @if ($task->type === 'question')
                 @if (in_array($task->status, ['in_progress', 'rejected']))
                     @include('client.tasks.partials._question-form')
@@ -69,6 +78,20 @@
                 @endif
             @elseif ($task->type === 'info')
                 @include('client.tasks.partials._info-content')
+            @endif
+
+            {{-- Submit for Review button (shown only when in_progress and not info type) --}}
+            @if ($task->status === 'in_progress' && $task->type !== 'info')
+                <div class="rounded-lg bg-white p-6 shadow-sm">
+                    <p class="text-sm text-gray-600 mb-4">{{ __('tasks.submit_for_review_help') }}</p>
+                    <form method="POST" action="{{ route('client.tasks.submit-for-review', [$application, $task]) }}">
+                        @csrf
+                        <button type="submit"
+                            class="rounded-md bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                            {{ __('tasks.submit_for_review') }}
+                        </button>
+                    </form>
+                </div>
             @endif
 
             {{-- Back link --}}

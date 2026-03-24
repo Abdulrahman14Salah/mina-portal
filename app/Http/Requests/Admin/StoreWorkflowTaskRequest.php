@@ -17,6 +17,7 @@ class StoreWorkflowTaskRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:1000'],
             'type' => ['required', 'in:upload,question,payment,info'],
+            'approval_mode' => ['nullable', 'in:auto,manual'],
         ];
     }
 }

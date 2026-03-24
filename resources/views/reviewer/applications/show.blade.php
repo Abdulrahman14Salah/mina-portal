@@ -36,9 +36,10 @@
 
                 @foreach ($application->tasks->sortBy('position') as $task)
                     <div class="rounded-lg bg-white p-6 shadow-sm
-                        {{ $task->status === 'approved' ? 'border-l-4 border-green-500' : '' }}
-                        {{ $task->status === 'in_progress' ? 'border-l-4 border-indigo-500 ring-1 ring-indigo-100' : '' }}
-                        {{ $task->status === 'rejected' ? 'border-l-4 border-red-500' : '' }}">
+                        {{ $task->status === 'approved'        ? 'border-l-4 border-green-500' : '' }}
+                        {{ $task->status === 'in_progress'     ? 'border-l-4 border-indigo-500 ring-1 ring-indigo-100' : '' }}
+                        {{ $task->status === 'pending_review'  ? 'border-l-4 border-amber-500 ring-1 ring-amber-100' : '' }}
+                        {{ $task->status === 'rejected'        ? 'border-l-4 border-red-500' : '' }}">
                         <div class="flex items-start justify-between gap-4">
                             <div>
                                 <p class="text-xs text-gray-400 mb-1">{{ __('tasks.step_number', ['number' => $task->position]) }}</p>
@@ -63,10 +64,11 @@
                                 @endif
                             </div>
                             <span class="shrink-0 rounded-full px-3 py-1 text-xs font-medium
-                                {{ $task->status === 'approved' ? 'bg-green-100 text-green-700' : '' }}
-                                {{ $task->status === 'in_progress' ? 'bg-indigo-100 text-indigo-700' : '' }}
-                                {{ $task->status === 'pending' ? 'bg-gray-100 text-gray-600' : '' }}
-                                {{ $task->status === 'rejected' ? 'bg-red-100 text-red-700' : '' }}">
+                                {{ $task->status === 'approved'       ? 'bg-green-100 text-green-700'  : '' }}
+                                {{ $task->status === 'in_progress'    ? 'bg-indigo-100 text-indigo-700': '' }}
+                                {{ $task->status === 'pending_review' ? 'bg-amber-100 text-amber-700'  : '' }}
+                                {{ $task->status === 'pending'        ? 'bg-gray-100 text-gray-600'    : '' }}
+                                {{ $task->status === 'rejected'       ? 'bg-red-100 text-red-700'      : '' }}">
                                 {{ __('tasks.status_' . $task->status) }}
                             </span>
                         </div>
@@ -81,8 +83,8 @@
                                 </form>
                             </div>
                         @elseif ($activeTask && $task->id === $activeTask->id)
-                            <div class="mt-4 rounded-lg bg-indigo-50/60 p-4">
-                                <p class="mb-4 text-sm font-medium text-indigo-900">{{ __('tasks.current_step') }}</p>
+                            <div class="mt-4 rounded-lg bg-amber-50/60 p-4">
+                                <p class="mb-4 text-sm font-medium text-amber-900">{{ __('tasks.awaiting_your_review') }}</p>
                                 <div class="grid gap-4 md:grid-cols-2">
                                     {{-- Approve Form --}}
                                     <form method="POST" action="{{ route('reviewer.tasks.approve', $task) }}" class="space-y-3">

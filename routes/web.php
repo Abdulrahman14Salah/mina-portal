@@ -46,6 +46,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/client/applications/{application}/tasks/{task}', [ClientTaskController::class, 'show'])->middleware('active')->name('client.tasks.show');
     Route::post('/client/applications/{application}/tasks/{task}/answers', [ClientTaskController::class, 'submitAnswers'])->middleware('active')->name('client.tasks.answers.submit');
     Route::post('/client/applications/{application}/tasks/{task}/receipt', [ClientTaskController::class, 'uploadReceipt'])->middleware('active')->name('client.tasks.receipt.upload');
+    Route::post('/client/applications/{application}/tasks/{task}/submit-for-review', [ClientTaskController::class, 'submitForReview'])->middleware('active')->name('client.tasks.submit-for-review');
     Route::get('/payments/success', [PaymentController::class, 'success'])->middleware('active')->name('client.payments.success');
     Route::get('/payments/cancel', [PaymentController::class, 'cancel'])->middleware('active')->name('client.payments.cancel');
     Route::get('/payments/{payment}/checkout', [PaymentController::class, 'checkout'])->middleware('active')->name('client.payments.checkout');

@@ -64,6 +64,9 @@
                                     <span>
                                         {{ $task->position }}. {{ $task->name }}
                                         <span class="ml-2 text-xs text-gray-400">({{ $task->type }})</span>
+                                        @if ($task->type === 'question' && $task->approval_mode)
+                                            <span class="ml-1 text-xs text-indigo-500">[{{ $task->approval_mode }}]</span>
+                                        @endif
                                     </span>
                                     <form method="POST" action="{{ route('admin.task-builder.tasks.destroy', $task) }}"
                                         onsubmit="return confirm('{{ __('admin.confirm_delete_task') }}')">
@@ -78,7 +81,7 @@
 
                             {{-- Add task to this section --}}
                             <form method="POST" action="{{ route('admin.task-builder.tasks.store', $section) }}"
-                                class="mt-3 flex items-end gap-2">
+                                class="mt-3 flex flex-wrap items-end gap-2" x-data="{ taskType: 'question' }">
                                 @csrf
                                 <div>
                                     <input type="text" name="name"
@@ -91,11 +94,18 @@
                                         placeholder="{{ __('admin.task_description_placeholder') }}">
                                 </div>
                                 <div>
-                                    <select name="type"
+                                    <select name="type" x-model="taskType"
                                         class="rounded-md border-gray-300 text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                                        <option value="upload">{{ __('admin.task_type_upload') }}</option>
-                                        <option value="text">{{ __('admin.task_type_text') }}</option>
-                                        <option value="both">{{ __('admin.task_type_both') }}</option>
+                                        <option value="question">{{ __('admin.task_type_question') }}</option>
+                                        <option value="payment">{{ __('admin.task_type_payment') }}</option>
+                                        <option value="info">{{ __('admin.task_type_info') }}</option>
+                                    </select>
+                                </div>
+                                <div x-show="taskType === 'question'">
+                                    <select name="approval_mode"
+                                        class="rounded-md border-gray-300 text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                        <option value="manual">{{ __('admin.approval_mode_manual') }}</option>
+                                        <option value="auto">{{ __('admin.approval_mode_auto') }}</option>
                                     </select>
                                 </div>
                                 <button type="submit"

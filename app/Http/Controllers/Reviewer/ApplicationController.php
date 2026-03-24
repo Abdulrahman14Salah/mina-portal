@@ -23,7 +23,7 @@ class ApplicationController extends Controller
         $this->authorize('view', $application);
 
         $application->loadMissing(['visaType', 'user', 'tasks' => fn ($q) => $q->orderBy('position')->with(['template', 'documents' => fn ($d) => $d->with('uploader')])]);
-        $activeTask = $application->tasks->firstWhere('status', 'in_progress');
+        $activeTask = $application->tasks->firstWhere('status', 'pending_review');
 
         return view('reviewer.applications.show', compact('application', 'activeTask'));
     }

@@ -11,8 +11,8 @@ class RolePermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        $admin = Role::firstOrCreate(['name' => 'admin']);
-        $client = Role::firstOrCreate(['name' => 'client']);
+        $admin    = Role::firstOrCreate(['name' => 'admin']);
+        $client   = Role::firstOrCreate(['name' => 'client']);
         $reviewer = Role::firstOrCreate(['name' => 'reviewer']);
 
         $permissions = [
@@ -27,6 +27,7 @@ class RolePermissionSeeder extends Seeder
             'tasks.view',
             'tasks.advance',
             'tasks.reject',
+            'tasks.submit-for-review',
             'documents.upload',
             'documents.download',
             'documents.admin-upload',
@@ -40,7 +41,7 @@ class RolePermissionSeeder extends Seeder
         }
 
         $admin->syncPermissions($permissions);
-        $client->syncPermissions(['dashboard.client', 'documents.upload', 'payments.pay']);
+        $client->syncPermissions(['dashboard.client', 'documents.upload', 'payments.pay', 'tasks.submit-for-review']);
         $reviewer->syncPermissions(['dashboard.reviewer', 'tasks.view', 'tasks.advance', 'tasks.reject', 'documents.download', 'documents.reviewer-upload']);
 
         app()[PermissionRegistrar::class]->forgetCachedPermissions();

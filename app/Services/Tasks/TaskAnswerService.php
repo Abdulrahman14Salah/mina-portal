@@ -17,6 +17,7 @@ class TaskAnswerService
     public function __construct(
         private AuditLogService $auditLog,
         private DocumentService $documentService,
+        private WorkflowService $workflowService,
     ) {}
 
     public function submitAnswers(ApplicationTask $task, array $answers, User $client): void
@@ -39,9 +40,15 @@ class TaskAnswerService
         });
 
         $this->auditLog->log('task_answers_submitted', $client, [
-            'task_id' => $task->id,
+            'task_id'   => $task->id,
             'reference' => $task->application->reference_number,
         ]);
+
+        // Auto-complete question tasks that don't require reviewer approval
+        if ($task->type === 'question' && $task->approval_mode === 'auto') {
+            $task->refresh();
+            $this->workflowService->autoCompleteTask($task);
+        }
     }
 
     public function uploadReceipt(ApplicationTask $task, UploadedFile $file, User $client): Document
@@ -55,7 +62,6 @@ class TaskAnswerService
             ->whereNull('archived_at')
             ->first();
 
-        // Upload first — if this throws, the existing receipt is preserved
         $document = $this->documentService->upload(
             $task->application,
             $task,
