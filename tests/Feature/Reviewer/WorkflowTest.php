@@ -74,6 +74,7 @@ class WorkflowTest extends TestCase
     {
         $reviewer = $this->makeReviewer();
         $application = $this->makeOnboardedApplication();
+        $application->update(['assigned_reviewer_id' => $reviewer->id]);
 
         $this->actingAs($reviewer)->get(route('reviewer.applications.show', $application))->assertOk()->assertSee('Application Received');
     }
@@ -86,11 +87,11 @@ class WorkflowTest extends TestCase
 
         $this->actingAs($reviewer)->post(route('reviewer.applications.tasks.advance', [$application, $task]), ['note' => 'Done'])->assertRedirect();
 
-        $this->assertSame('completed', $task->fresh()->status);
+        $this->assertSame('approved', $task->fresh()->status);
         $this->assertSame('in_progress', ApplicationTask::where('application_id', $application->id)->where('position', 2)->first()->status);
     }
 
-    public function test_all_tasks_completed_sets_application_approved(): void
+    public function test_all_tasks_completed_does_not_auto_approve_application(): void
     {
         $reviewer = $this->makeReviewer();
         $application = $this->makeOnboardedApplication();
@@ -100,19 +101,20 @@ class WorkflowTest extends TestCase
             $this->actingAs($reviewer)->post(route('reviewer.applications.tasks.advance', [$application, $task]), ['note' => 'Done']);
         }
 
-        $this->assertSame('approved', $application->fresh()->status);
+        $this->assertNotEquals('approved', $application->fresh()->status);
     }
 
     public function test_reviewer_can_reject_task(): void
     {
         $reviewer = $this->makeReviewer();
         $application = $this->makeOnboardedApplication();
+        $application->update(['assigned_reviewer_id' => $reviewer->id]);
         $task = $application->tasks->firstWhere('status', 'in_progress');
 
         $this->actingAs($reviewer)->post(route('reviewer.applications.tasks.reject', [$application, $task]), ['note' => 'Insufficient information'])->assertRedirect();
 
         $this->assertSame('rejected', $task->fresh()->status);
-        $this->assertSame('rejected', $application->fresh()->status);
+        $this->assertNotEquals('rejected', $application->fresh()->status);
     }
 
     public function test_client_cannot_advance_tasks(): void

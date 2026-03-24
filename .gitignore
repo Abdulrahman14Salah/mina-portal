@@ -30,3 +30,4 @@ build/
 *.swp
 .DS_Store
 Thumbs.db
+agency-agents/

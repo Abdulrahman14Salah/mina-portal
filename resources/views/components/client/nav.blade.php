@@ -5,8 +5,6 @@
         'documents' => __('client.tab_documents'),
         'tasks'     => __('client.tab_tasks'),
         'payments'  => __('client.tab_payments'),
-        'timeline'  => __('client.tab_timeline'),
-        'messages'  => __('client.tab_messages'),
         'profile'   => __('client.tab_profile'),
         'support'   => __('client.tab_support'),
     ];

@@ -7,7 +7,7 @@
         <a href="{{ route($item['route']) }}"
            class="whitespace-nowrap px-4 py-2 text-sm font-medium rounded-md transition-colors
                   {{ $isActive
-                      ? 'bg-gray-900 text-white'
+                      ? 'bg-gray-900'
                       : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
             {{ __($item['label_key']) }}
         </a>

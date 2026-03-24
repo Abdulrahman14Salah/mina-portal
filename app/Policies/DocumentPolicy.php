@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\Document;
 use App\Models\User;
+use App\Models\VisaApplication;
 
 class DocumentPolicy
 {
@@ -26,8 +27,35 @@ class DocumentPolicy
         return $user->can('documents.admin-upload');
     }
 
-    public function reviewerUpload(User $user): bool
+    public function reviewerUpload(User $user, VisaApplication $application): bool
     {
-        return $user->can('documents.reviewer-upload');
+        if (! $user->can('documents.reviewer-upload')) {
+            return false;
+        }
+
+        return $application->assigned_reviewer_id === $user->id;
+    }
+
+    public function delete(User $user, Document $document): bool
+    {
+        if ($user->can('documents.delete')) {
+            return true;
+        }
+
+        if (! $user->can('documents.delete-own')) {
+            return false;
+        }
+
+        if ($document->uploaded_by !== $user->id) {
+            return false;
+        }
+
+        if ($document->application_task_id === null) {
+            return true;
+        }
+
+        $task = $document->task;
+
+        return $task !== null && ! in_array($task->status, ['approved', 'rejected']);
     }
 }

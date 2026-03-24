@@ -44,4 +44,10 @@
             </x-primary-button>
         </div>
     </form>
+
+    <p class="mt-6 text-center text-sm text-gray-600">
+        <a href="{{ route('onboarding.show') }}" class="underline hover:text-gray-900">
+            {{ __('auth.apply_now') }}
+        </a>
+    </p>
 </x-guest-layout>

@@ -61,11 +61,11 @@ class DashboardTest extends TestCase
             ->assertSee('APP-00001');
     }
 
-    public function test_all_8_tabs_accessible(): void
+    public function test_all_tabs_accessible(): void
     {
         $client = $this->makeOnboardedClient();
 
-        foreach (['overview', 'documents', 'tasks', 'payments', 'timeline', 'messages', 'profile', 'support'] as $tab) {
+        foreach (['overview', 'documents', 'tasks', 'payments', 'profile', 'support'] as $tab) {
             $this->actingAs($client)->get('/client/dashboard/' . $tab)->assertOk();
         }
     }

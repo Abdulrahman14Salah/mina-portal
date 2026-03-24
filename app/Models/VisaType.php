@@ -31,4 +31,9 @@ class VisaType extends Model
     {
         return $query->where('is_active', true);
     }
+
+    public function workflowSections(): HasMany
+    {
+        return $this->hasMany(WorkflowSection::class)->orderBy('position');
+    }
 }

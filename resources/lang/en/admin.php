@@ -4,7 +4,6 @@ return [
     // Navigation
     'nav_dashboard' => 'Dashboard',
     'nav_applications' => 'Applications',
-    'nav_visa_types' => 'Visa Types',
     'nav_clients' => 'Clients',
     'nav_task_builder' => 'Task Builder',
     'nav_reviewers' => 'Reviewers',
@@ -41,4 +40,16 @@ return [
     'return_to_dashboard' => 'Return to Dashboard',
     // Placeholder
     'coming_soon' => 'Coming soon.',
+    // Application show page
+    'reviewer_assigned' => 'Reviewer assigned successfully.',
+    'reviewer_assignment' => 'Reviewer Assignment',
+    'currently_assigned_to' => 'Currently assigned to',
+    'no_reviewer_assigned' => 'No reviewer assigned yet.',
+    'select_reviewer' => 'Select Reviewer',
+    'unassign' => 'No reviewer',
+    'save_assignment' => 'Save Assignment',
+    'back_to_list' => 'Back to Applications',
+    'client_label' => 'Client',
+    'visa_type_label' => 'Visa Type',
+    'submitted_label' => 'Submitted',
 ];
